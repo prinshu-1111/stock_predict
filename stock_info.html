@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Info Checker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .yes-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        .no-btn {
+            background: #f44336;
+            color: white;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+        }
+        .stock-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        .stock-item {
+            padding: 8px 12px;
+            margin: 2px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stock-item:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(5px);
+        }
+        .stock-symbol {
+            font-weight: bold;
+        }
+        .stock-name {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        .recommendation {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .buy { background: #4CAF50; }
+        .sell { background: #f44336; }
+        .hold { background: #ff9800; }
+        .chart-container {
+            margin: 20px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+        #stockChart {
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Stock Info Checker</h1>
+        
+        <div class="stock-list" id="stockList">
+            <div class="stock-item" onclick="selectStock('AAPL')">
+                <span class="stock-symbol">AAPL</span>
+                <span class="stock-name">Apple Inc.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('GOOGL')">
+                <span class="stock-symbol">GOOGL</span>
+                <span class="stock-name">Alphabet Inc.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('MSFT')">
+                <span class="stock-symbol">MSFT</span>
+                <span class="stock-name">Microsoft Corp.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('AMZN')">
+                <span class="stock-symbol">AMZN</span>
+                <span class="stock-name">Amazon.com Inc.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('TSLA')">
+                <span class="stock-symbol">TSLA</span>
+                <span class="stock-name">Tesla Inc.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('META')">
+                <span class="stock-symbol">META</span>
+                <span class="stock-name">Meta Platforms</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('NVDA')">
+                <span class="stock-symbol">NVDA</span>
+                <span class="stock-name">NVIDIA Corp.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('NFLX')">
+                <span class="stock-symbol">NFLX</span>
+                <span class="stock-name">Netflix Inc.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('JPM')">
+                <span class="stock-symbol">JPM</span>
+                <span class="stock-name">JPMorgan Chase</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('JNJ')">
+                <span class="stock-symbol">JNJ</span>
+                <span class="stock-name">Johnson & Johnson</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('V')">
+                <span class="stock-symbol">V</span>
+                <span class="stock-name">Visa Inc.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('PG')">
+                <span class="stock-symbol">PG</span>
+                <span class="stock-name">Procter & Gamble</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('UNH')">
+                <span class="stock-symbol">UNH</span>
+                <span class="stock-name">UnitedHealth Group</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('HD')">
+                <span class="stock-symbol">HD</span>
+                <span class="stock-name">Home Depot Inc.</span>
+            </div>
+            <div class="stock-item" onclick="selectStock('MA')">
+                <span class="stock-symbol">MA</span>
+                <span class="stock-name">Mastercard Inc.</span>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="ticker" placeholder="Or enter custom ticker" maxlength="10">
+        </div>
+        
+        <div class="btn-group">
+            <button class="yes-btn" onclick="getStockInfo(true)">YES - Get Info</button>
+            <button class="no-btn" onclick="getStockInfo(false)">NO - Skip</button>
+        </div>
+        
+        <div class="chart-container" id="chartContainer">
+            <canvas id="stockChart"></canvas>
+        </div>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'R17S42MMBJZNO4YJ';
+        let stockChart = null;
+        
+        function selectStock(symbol) {
+            document.getElementById('ticker').value = symbol;
+        }
+        
+        function loadStockChart(symbol) {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.style.display = 'block';
+            
+            fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${API_KEY}`)
+                .then(response => response.json())
+                .then(data => {
+                    const timeSeries = data['Time Series (Daily)'];
+                    if (!timeSeries) throw new Error('No data');
+                    
+                    const dates = Object.keys(timeSeries).slice(0, 30).reverse();
+                    const prices = dates.map(date => parseFloat(timeSeries[date]['4. close']));
+                    
+                    // Simple prediction (last price + trend)
+                    const trend = prices[prices.length-1] - prices[prices.length-2];
+                    const prediction = prices[prices.length-1] + trend;
+                    
+                    createChart(dates, prices, prediction, symbol);
+                })
+                .catch(() => {
+                    // Fallback demo data
+                    const dates = Array.from({length: 30}, (_, i) => {
+                        const date = new Date();
+                        date.setDate(date.getDate() - (29 - i));
+                        return date.toISOString().split('T')[0];
+                    });
+                    const basePrice = 150;
+                    const prices = dates.map((_, i) => basePrice + Math.sin(i * 0.3) * 10 + Math.random() * 5);
+                    const prediction = prices[prices.length-1] * 1.02;
+                    
+                    createChart(dates, prices, prediction, symbol);
+                });
+        }
+        
+        function createChart(dates, prices, prediction, symbol) {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            
+            if (stockChart) stockChart.destroy();
+            
+            const chartData = [...prices, prediction];
+            const chartLabels = [...dates, 'Tomorrow'];
+            
+            stockChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: `${symbol} Price`,
+                        data: prices,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.1
+                    }, {
+                        label: 'Prediction',
+                        data: [null, ...Array(prices.length-1).fill(null), prediction],
+                        borderColor: '#ff9800',
+                        backgroundColor: 'rgba(255, 152, 0, 0.3)',
+                        pointRadius: 8,
+                        pointHoverRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { color: 'white', maxTicksLimit: 
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: { 
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function getStockInfo(proceed) {
+            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('result');
+            
+            if (!proceed) {
+                resultDiv.innerHTML = '❌ Stock info request cancelled.';
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            if (!ticker) {
+                resultDiv.innerHTML = '⚠️ Please enter a stock ticker symbol.';
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="loading">📊 Fetching stock data...</div>';
+            resultDiv.style.display = 'block';
+            
+            fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${API_KEY}`)
+                .then(response => response.json())
+                .then(data => {
+                    const quote = data['Global Quote'];
+                    
+                    if (!quote || Object.keys(quote).length === 0) {
+                        throw new Error('Stock not found');
+                    }
+                    
+                    const price = parseFloat(quote['05. price']);
+                    const change = parseFloat(quote['09. change']);
+                    const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
+                    const priceINR = (price * 83.5).toFixed(2);
+                    const changeINR = (change * 83.5).toFixed(2);
+                    
+                    let recommendation = '';
+                    let recClass = '';
+                    if (changePercent > 2) {
+                        recommendation = '🚀 STRONG BUY - Stock showing strong upward momentum';
+                        recClass = 'buy';
+                    } else if (changePercent > 0.5) {
+                        recommendation = '📈 BUY - Positive trend, good entry point';
+                        recClass = 'buy';
+                    loadStockChart(ticker);
+                    } else if (changePercent < -2) {
+                        recommendation = '📉 SELL - Declining trend, consider exit';
+                        recClass = 'sell';
+                    } else if (changePercent < -0.5) {
+                        recommendation = '⚠️ HOLD/WATCH - Monitor closely for further decline';
+                        recClass = 'hold';
+                    } else {
+                        recommendation = '🔄 HOLD - Stable price, maintain position';
+                        recClass = 'hold';
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <h3>📊 ${ticker} Stock Analysis</h3>
+                        <p><strong>USD Price:</strong> $${price.toFixed(2)}</p>
+                        <p><strong>INR Price:</strong> ₹${priceINR}</p>
+                        <p><strong>Change (USD):</strong> ${change >= 0 ? '+' : ''}$${change.toFixed(2)} (${changePercent.toFixed(2)}%)</p>
+                        <p><strong>Change (INR):</strong> ${change >= 0 ? '+' : ''}₹${changeINR} (${changePercent.toFixed(2)}%)</p>
+                        <p><strong>Status:</strong> ${change >= 0 ? '📈 Up' : '📉 Down'}</p>
+                        <div class="recommendation ${recClass}">
+                            ${recommendation}
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `❌ Error: Could not fetch data for ${ticker}. Please check the ticker symbol.`;
+                });
+        }
+        
+        document.getElementById('ticker').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getStockInfo(true);
+            }
+        });
+        
+
+    </script>
+</body>
+</html>
