@@ -282,7 +282,7 @@
                     },
                     scales: {
                         x: { 
-                            ticks: { color: 'white', maxTicksLimit: 
+                            ticks: { color: 'white', maxTicksLimit: 5 },
                             grid: { color: 'rgba(255,255,255,0.1)' }
                         },
                         y: { 
@@ -336,7 +336,6 @@
                     } else if (changePercent > 0.5) {
                         recommendation = '📈 BUY - Positive trend, good entry point';
                         recClass = 'buy';
-                    loadStockChart(ticker);
                     } else if (changePercent < -2) {
                         recommendation = '📉 SELL - Declining trend, consider exit';
                         recClass = 'sell';
@@ -347,6 +346,8 @@
                         recommendation = '🔄 HOLD - Stable price, maintain position';
                         recClass = 'hold';
                     }
+                    
+                    loadStockChart(ticker);
                     
                     resultDiv.innerHTML = `
                         <h3>📊 ${ticker} Stock Analysis</h3>
