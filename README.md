@@ -1,6 +1,8 @@
-# Stock Price Prediction & Buy/Sell Suggestion
+# StockVison - A Stock Price Prediction & Buy/Sell Suggestion
 
 A machine learning project that predicts next-day stock prices using linear regression and provides buy/sell recommendations based on Alpha Vantage market data.
+
+# stock-predict-chi.vercel.app
 
 ## API configuration
 
