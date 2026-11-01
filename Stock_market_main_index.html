@@ -491,6 +491,8 @@ body{
   border:1px solid rgba(38,50,68,.78);
   border-radius:var(--rl);
   padding:16px;
+  min-width:0;
+  overflow:hidden;
 }
 .available-tickers-header{
   display:flex;
@@ -505,12 +507,14 @@ body{
   display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
   border:1px solid rgba(38,50,68,.9);border-radius:10px;background:#101722;color:var(--t1);
   padding:10px 11px;cursor:pointer;text-align:left;font-family:inherit;
+  height:52px;overflow:hidden;
   transition:transform .15s,border-color .15s,background .15s;
 }
+.ticker-option > span:first-child{min-width:0;overflow:hidden}
 .ticker-option:hover{transform:translateY(-1px);border-color:rgba(79,140,255,.58);background:#172131}
-.ticker-option-symbol{font-size:12px;font-weight:800}
+.ticker-option-symbol{display:block;font-size:12px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ticker-option-name{display:block;margin-top:2px;overflow:hidden;color:var(--t3);font-size:9px;text-overflow:ellipsis;white-space:nowrap}
-.ticker-option-arrow{color:var(--accent);font-size:13px}
+.ticker-option-arrow{color:var(--accent);font-size:13px;flex:0 0 auto}
 .ticker-browser-tools{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .ticker-browser-search{
   flex:1;background:#0d121c;border:1px solid rgba(38,50,68,.9);border-radius:9px;
@@ -518,6 +522,10 @@ body{
 }
 .ticker-browser-search:focus{border-color:rgba(79,140,255,.65)}
 .ticker-load-more{display:none;margin:12px auto 0;padding:8px 18px}
+
+@media(max-width:1100px){
+  .ticker-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
 
 .kpi,.mc,.cpanel,.ppanel,.spanel,.trade-panel{
   background:linear-gradient(145deg,rgba(20,27,38,.98),rgba(17,23,34,.98));
@@ -1050,8 +1058,8 @@ body{
 /* ════════════════════════════════════════════════════════════
    CONSTANTS
 ════════════════════════════════════════════════════════════ */
-const API_KEY = localStorage.getItem('sv_alpha_vantage_key') || '';
-const TWELVE_DATA_API_KEY = localStorage.getItem('sv_twelve_data_key') || '';
+const API_KEY = '';
+const TWELVE_DATA_API_KEY = '';
 const INR_RATE   = 83.5;
 const START_CASH = 100000;
 
@@ -1062,14 +1070,12 @@ const START_CASH = 100000;
    Session: sv_session = userId
 ════════════════════════════════════════════════════════════ */
 
-function getUsers(){ try{return JSON.parse(localStorage.getItem('sv_users'))||{};}catch(e){return{};} }
-function saveUsers(u){ localStorage.setItem('sv_users',JSON.stringify(u)); }
 function getSession(){ return localStorage.getItem('sv_session')||null; }
 function setSession(id){ localStorage.setItem('sv_session',id); }
 function clearSession(){ localStorage.removeItem('sv_session'); }
 
 /* Simple hash (not cryptographic — client-side demo only) */
-function hashPass(pw){ let h=5381; for(let i=0;i<pw.length;i++){h=((h<<5)+h)+pw.charCodeAt(i)|0;} return h.toString(16); }
+function hashPass(pw){ let h=5381; for(let i=0;i<pw.length;i++){h=((h<<5)+h)+pw.charCodeAt(i)|0;} return (h>>>0).toString(16); }
 
 function freshState(){ return {cash:START_CASH,holdings:{},transactions:[],perfHistory:[]}; }
 
@@ -1117,7 +1123,14 @@ function updatePwStrength(pw){
 }
 
 /* ── SIGN UP ────────────────────────────────────────────── */
-function doSignUp(){
+async function apiUserRequest(url, options={}){
+  const response=await fetch(url,{headers:{'Content-Type':'application/json'},...options});
+  const data=await response.json();
+  if(!response.ok) throw new Error(data.error||'Database request failed.');
+  return data;
+}
+
+async function doSignUp(){
   clearAuthErrors();
   const name    = document.getElementById('su-name').value.trim();
   const email   = document.getElementById('su-email').value.trim().toLowerCase();
@@ -1133,19 +1146,18 @@ function doSignUp(){
   if(pw&&confirm!==pw){fieldErr('su-confirm','su-confirm-err','Passwords do not match.');ok=false;}
   if(!ok)return;
 
-  const users=getUsers();
-  const exists=Object.values(users).find(u=>u.email===email);
-  if(exists){globalErr('su-global-err','An account with this email already exists.');return;}
-
   const id='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-  users[id]={id,name,email,pwHash:hashPass(pw),createdAt:new Date().toISOString(),state:freshState()};
-  saveUsers(users);
-  setSession(id);
-  bootApp(users[id]);
+  try{
+    const user=await apiUserRequest('/api/auth/signup',{
+      method:'POST',body:JSON.stringify({id,name,email,passwordHash:hashPass(pw)})
+    });
+    setSession(id);
+    bootApp(user);
+  }catch(error){globalErr('su-global-err',error.message);}
 }
 
 /* ── SIGN IN ────────────────────────────────────────────── */
-function doSignIn(){
+async function doSignIn(){
   clearAuthErrors();
   const email = document.getElementById('si-email').value.trim().toLowerCase();
   const pw    = document.getElementById('si-pass').value;
@@ -1155,14 +1167,13 @@ function doSignIn(){
   if(!pw){fieldErr('si-pass','si-pass-err','Password is required.');ok=false;}
   if(!ok)return;
 
-  const users=getUsers();
-  const user=Object.values(users).find(u=>u.email===email);
-  if(!user||user.pwHash!==hashPass(pw)){
-    globalErr('si-global-err','Incorrect email or password.');
-    return;
-  }
-  setSession(user.id);
-  bootApp(user);
+  try{
+    const user=await apiUserRequest('/api/auth/signin',{
+      method:'POST',body:JSON.stringify({email,passwordHash:hashPass(pw)})
+    });
+    setSession(user.id);
+    bootApp(user);
+  }catch(error){globalErr('si-global-err',error.message);}
 }
 
 /* ── SIGN OUT ───────────────────────────────────────────── */
@@ -1204,13 +1215,12 @@ function bootApp(user){
 }
 
 /* ── Auto-login on page load ────────────────────────────── */
-(function(){
+(async function(){
   document.getElementById('app').style.display='none';
   const sid=getSession();
   if(sid){
-    const users=getUsers();
-    if(users[sid]) bootApp(users[sid]);
-    else{ clearSession(); }
+    try{bootApp(await apiUserRequest('/api/users/'+encodeURIComponent(sid)));}
+    catch(error){clearSession();}
   }
 })();
 
@@ -1224,11 +1234,9 @@ document.getElementById('su-confirm').addEventListener('keydown',e=>{if(e.key===
 ════════════════════════════════════════════════════════════ */
 function saveCurrentUserState(){
   if(!CURRENT_USER)return;
-  const users=getUsers();
-  if(users[CURRENT_USER.id]){
-    users[CURRENT_USER.id].state=STATE;
-    saveUsers(users);
-  }
+  apiUserRequest('/api/users/'+encodeURIComponent(CURRENT_USER.id),{
+    method:'PUT',body:JSON.stringify({state:STATE})
+  }).catch(()=>showToast('Could not save portfolio to local database','err'));
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1244,13 +1252,15 @@ document.addEventListener('click',e=>{
 /* ════════════════════════════════════════════════════════════
    SETTINGS ACTIONS
 ════════════════════════════════════════════════════════════ */
-function changeDisplayName(){
+async function changeDisplayName(){
   const newName=document.getElementById('settings-new-name').value.trim();
   if(!newName){showToast('Name cannot be empty','warn');return;}
-  const users=getUsers();
-  users[CURRENT_USER.id].name=newName;
-  saveUsers(users);
-  CURRENT_USER.name=newName;
+  try{
+    const user=await apiUserRequest('/api/users/'+encodeURIComponent(CURRENT_USER.id),{
+      method:'PUT',body:JSON.stringify({name:newName})
+    });
+    CURRENT_USER=user;
+  }catch(error){showToast(error.message,'err');return;}
   const initials=newName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('hdr-avatar').textContent=initials;
   document.getElementById('hdr-username').textContent=newName.split(' ')[0];
@@ -1261,18 +1271,19 @@ function changeDisplayName(){
   showToast('Display name updated','ok');
 }
 
-function changePassword(){
+async function changePassword(){
   const cur    =document.getElementById('settings-cur-pass').value;
   const nw     =document.getElementById('settings-new-pass').value;
   const confirm=document.getElementById('settings-confirm-pass').value;
   if(!cur||!nw||!confirm){showToast('All password fields are required','warn');return;}
-  const users=getUsers();
-  const user=users[CURRENT_USER.id];
-  if(user.pwHash!==hashPass(cur)){showToast('Current password is incorrect','err');return;}
+  if(CURRENT_USER.pwHash!==hashPass(cur)){showToast('Current password is incorrect','err');return;}
   if(nw.length<6){showToast('New password must be at least 6 characters','warn');return;}
   if(nw!==confirm){showToast('New passwords do not match','err');return;}
-  user.pwHash=hashPass(nw);
-  saveUsers(users);
+  try{
+    CURRENT_USER=await apiUserRequest('/api/users/'+encodeURIComponent(CURRENT_USER.id),{
+      method:'PUT',body:JSON.stringify({passwordHash:hashPass(nw)})
+    });
+  }catch(error){showToast(error.message,'err');return;}
   document.getElementById('settings-cur-pass').value='';
   document.getElementById('settings-new-pass').value='';
   document.getElementById('settings-confirm-pass').value='';
@@ -1280,15 +1291,13 @@ function changePassword(){
 }
 
 function confirmDeleteAccount(){ document.getElementById('del-pass').value=''; document.getElementById('del-err').textContent=''; document.getElementById('del-modal').classList.add('open'); }
-function executeDeleteAccount(){
+async function executeDeleteAccount(){
   const pw=document.getElementById('del-pass').value;
-  const users=getUsers();
-  const user=users[CURRENT_USER.id];
-  if(!user||user.pwHash!==hashPass(pw)){
+  if(!CURRENT_USER||CURRENT_USER.pwHash!==hashPass(pw)){
     const e=document.getElementById('del-err'); e.textContent='Incorrect password.'; e.classList.add('show'); return;
   }
-  delete users[CURRENT_USER.id];
-  saveUsers(users);
+  try{await apiUserRequest('/api/users/'+encodeURIComponent(CURRENT_USER.id),{method:'DELETE'});}
+  catch(error){showToast(error.message,'err');return;}
   clearSession();
   document.getElementById('del-modal').classList.remove('open');
   doSignOut();
@@ -1326,11 +1335,38 @@ async function loadAvailableTickers(){
     request,
     new Promise((_,reject)=>setTimeout(()=>reject(new Error('Ticker catalog request timed out')),timeout))
   ]);
-  const twelvePromise=fetchWithTimeout(fetch(`https://api.twelvedata.com/stocks?apikey=${TWELVE_DATA_API_KEY}`).then(r=>r.json()));
-  const alphaPromise=fetchWithTimeout(fetch(`https://www.alphavantage.co/query?function=LISTING_STATUS&apikey=${API_KEY}`).then(r=>r.text()));
+  const twelvePromise=fetchWithTimeout(fetch('/api/twelve/stocks').then(async r=>{
+    if(!r.ok) throw new Error(`Ticker catalog request failed (${r.status})`);
+    return r.json();
+  }));
+  const alphaPromise=fetchWithTimeout(fetch('/api/alpha?function=LISTING_STATUS').then(async r=>{
+    if(!r.ok) throw new Error(`Listing status request failed (${r.status})`);
+    const content=await r.text();
+    if(!/^symbol\s*,/i.test(content.trim()) || /<(?:!doctype|html)/i.test(content)) {
+      throw new Error('Listing status returned invalid content');
+    }
+    return content;
+  }));
 
   const [twelveResult,alphaResult]=await Promise.allSettled([twelvePromise,alphaPromise]);
   const merged=new Map();
+
+  function parseCsvLine(line){
+    const values=[];
+    let value='',quoted=false;
+    for(let i=0;i<line.length;i++){
+      const char=line[i];
+      if(char==='\"'){
+        if(quoted && line[i+1]==='\"'){value+='\"';i++;}
+        else quoted=!quoted;
+      }else if(char===',' && !quoted){
+        values.push(value.trim());
+        value='';
+      }else value+=char;
+    }
+    values.push(value.trim());
+    return values;
+  }
 
   if(twelveResult.status==='fulfilled'){
     const rows=Array.isArray(twelveResult.value?.data)?twelveResult.value.data:[];
@@ -1341,12 +1377,22 @@ async function loadAvailableTickers(){
   }
 
   if(alphaResult.status==='fulfilled'){
-    const lines=alphaResult.value.split(/\r?\n/).filter(Boolean);
-    for(let i=1;i<lines.length;i++){
-      const columns=lines[i].split(',');
-      const symbol=(columns[0]||'').trim().toUpperCase();
+    const lines=alphaResult.value.split(/\r?\n/).filter(line=>line.trim() && !line.includes('<html') && !line.includes('<!DOCTYPE'));
+    const header=lines.shift();
+    if(!header || !/^symbol\s*,/i.test(header)) lines.length=0;
+    const columns=parseCsvLine(header);
+    const symbolIndex=columns.findIndex(column=>column.toLowerCase()==='symbol');
+    const nameIndex=columns.findIndex(column=>column.toLowerCase()==='name');
+    const exchangeIndex=columns.findIndex(column=>column.toLowerCase()==='exchange');
+    for(const line of lines){
+      const row=parseCsvLine(line);
+      const symbol=(row[symbolIndex]||'').trim().toUpperCase();
       if(!symbol)continue;
-      if(!merged.has(symbol)) merged.set(symbol,{sym:symbol,name:(columns[1]||symbol).replace(/^"|"$/g,''),exchange:(columns[3]||'').replace(/^"|"$/g,'')});
+      if(!merged.has(symbol)) merged.set(symbol,{
+        sym:symbol,
+        name:row[nameIndex]||symbol,
+        exchange:row[exchangeIndex]||''
+      });
     }
   }
 
@@ -1446,7 +1492,7 @@ function runAnalysis(){
   if(!sym){showToast('Please enter a ticker symbol.','warn');return;}
   currentSymbol=sym; highlightWatchItem(sym); setLoading(true); showAnalyticsDashboard(false);
 
-  fetch(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(sym)}&apikey=${TWELVE_DATA_API_KEY}`)
+  fetch(`/api/twelve/quote?symbol=${encodeURIComponent(sym)}`)
     .then(r=>{
       if(!r.ok) throw new Error('HTTP '+r.status);
       return r.json();
@@ -1472,7 +1518,7 @@ function runAnalysis(){
     })
     .catch(err=>{
       console.warn('[StockVision] Twelve Data quote unavailable, trying Alpha Vantage:',err.message);
-      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${API_KEY}`)
+      fetch(`/api/alpha?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(sym)}`)
         .then(r=>{
           if(!r.ok) throw new Error('HTTP '+r.status);
           return r.json();
@@ -1562,7 +1608,7 @@ function loadChart(sym,useFallback=false){
   if(stockChart){stockChart.destroy();stockChart=null;}
   if(useFallback){buildFallbackChart(sym);return;}
 
-  fetch(`https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym)}&interval=1day&outputsize=100&apikey=${TWELVE_DATA_API_KEY}`)
+  fetch(`/api/twelve/time_series?symbol=${encodeURIComponent(sym)}&interval=1day&outputsize=100`)
     .then(r=>r.json())
     .then(data=>{
       if(data.status==='error'||!data.values||!data.values.length) throw new Error(data.message||'No Twelve Data chart values');
@@ -1579,7 +1625,7 @@ function loadChart(sym,useFallback=false){
 }
 
 function loadAlphaVantageChart(sym){
-  fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${sym}&outputsize=compact&apikey=${API_KEY}`)
+  fetch(`/api/alpha?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(sym)}&outputsize=compact`)
     .then(r=>{
       if(!r.ok) throw new Error('HTTP '+r.status);
       return r.json();
