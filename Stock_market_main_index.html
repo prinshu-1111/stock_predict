@@ -724,7 +724,7 @@ body{
         </div>
         <div class="af-group">
           <label class="af-label">Password</label>
-          <input class="af-input" id="su-pass" type="password" placeholder="Min. 6 characters" autocomplete="new-password" oninput="updatePwStrength(this.value)">
+          <input class="af-input" id="su-pass" type="password" placeholder="Min. 6 chars + symbol" autocomplete="new-password" oninput="updatePwStrength(this.value)">
           <div class="pw-strength">
             <div class="pw-bar-bg"><div class="pw-bar-fill" id="pw-bar" style="width:0%;background:var(--red)"></div></div>
             <span class="pw-hint" id="pw-hint">Enter a password</span>
@@ -976,7 +976,7 @@ body{
             <div style="display:flex;flex-direction:column;gap:8px">
               <div class="t-label">Change Password</div>
               <input class="t-input" id="settings-cur-pass" type="password" placeholder="Current password">
-              <input class="t-input" id="settings-new-pass" type="password" placeholder="New password (min 6 chars)">
+              <input class="t-input" id="settings-new-pass" type="password" placeholder="New password (min 6 chars + symbol)">
               <input class="t-input" id="settings-confirm-pass" type="password" placeholder="Confirm new password">
               <button class="abtn" style="padding:8px 14px;font-size:12.5px" onclick="changePassword()">Update Password</button>
             </div>
@@ -1143,13 +1143,14 @@ async function doSignUp(){
   else if(!isValidEmail(email)){fieldErr('su-email','su-email-err','Enter a valid email address.');ok=false;}
   if(!pw){fieldErr('su-pass','su-pass-err','Password is required.');ok=false;}
   else if(pw.length<6){fieldErr('su-pass','su-pass-err','Password must be at least 6 characters.');ok=false;}
+  else if(!/[^A-Za-z0-9]/.test(pw)){fieldErr('su-pass','su-pass-err','Password must include at least one special character.');ok=false;}
   if(pw&&confirm!==pw){fieldErr('su-confirm','su-confirm-err','Passwords do not match.');ok=false;}
   if(!ok)return;
 
   const id='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
   try{
     const user=await apiUserRequest('/api/auth/signup',{
-      method:'POST',body:JSON.stringify({id,name,email,passwordHash:hashPass(pw)})
+      method:'POST',body:JSON.stringify({id,name,email,password,pwHash:hashPass(pw),passwordHash:hashPass(pw)})
     });
     setSession(id);
     bootApp(user);
@@ -1278,10 +1279,11 @@ async function changePassword(){
   if(!cur||!nw||!confirm){showToast('All password fields are required','warn');return;}
   if(CURRENT_USER.pwHash!==hashPass(cur)){showToast('Current password is incorrect','err');return;}
   if(nw.length<6){showToast('New password must be at least 6 characters','warn');return;}
+  if(!/[^A-Za-z0-9]/.test(nw)){showToast('New password must include a special character','warn');return;}
   if(nw!==confirm){showToast('New passwords do not match','err');return;}
   try{
     CURRENT_USER=await apiUserRequest('/api/users/'+encodeURIComponent(CURRENT_USER.id),{
-      method:'PUT',body:JSON.stringify({passwordHash:hashPass(nw)})
+      method:'PUT',body:JSON.stringify({password:nw,passwordHash:hashPass(nw)})
     });
   }catch(error){showToast(error.message,'err');return;}
   document.getElementById('settings-cur-pass').value='';

@@ -6,6 +6,7 @@ from pathlib import Path
 import json
 import time
 import sqlite3
+import shutil
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 from dotenv import load_dotenv
@@ -15,8 +16,14 @@ load_dotenv(BASE_DIR / ".env")
 
 app = Flask(__name__, static_folder=str(BASE_DIR), static_url_path="")
 CATALOG_CACHE = BASE_DIR / ".ticker_catalog_cache.json"
+DEPLOY_CATALOG = BASE_DIR / "ticker_catalog.json"
 CATALOG_CACHE_MAX_AGE = 24 * 60 * 60
 DB_PATH = BASE_DIR / "stockvision.db"
+if os.environ.get("VERCEL"):
+    DB_PATH = Path("/tmp/stockvision.db")
+    bundled_db = BASE_DIR / "stockvision.db"
+    if not DB_PATH.exists() and bundled_db.exists():
+        shutil.copy2(bundled_db, DB_PATH)
 
 
 def db():
@@ -26,7 +33,10 @@ def db():
 
 
 def init_database():
-    connection = db()
+    try:
+        connection = db()
+    except sqlite3.OperationalError:
+        return
     connection.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
@@ -38,8 +48,8 @@ def init_database():
         )
     """)
     seeded_users = [
-        ("test_user_1", "Piyush Shah", "piyush@example.com", "test1234"),
-        ("test_user_2", "Demo Trader", "demo@example.com", "demo1234"),
+        ("test_user_1", "Piyush Shah", "piyush@example.com", "Test123!"),
+        ("test_user_2", "Demo Trader", "demo@example.com", "Demo123!"),
     ]
     for user_id, name, email, password in seeded_users:
         exists = connection.execute("SELECT 1 FROM users WHERE email = ?", (email,)).fetchone()
@@ -58,6 +68,14 @@ def init_database():
                     json.dumps({"cash": 100000, "holdings": {}, "transactions": [], "perfHistory": []}),
                 ),
             )
+        else:
+            password_hash = 5381
+            for char in password:
+                password_hash = ((password_hash << 5) + password_hash + ord(char)) & 0xffffffff
+            connection.execute(
+                "UPDATE users SET password_hash = ?, name = ? WHERE email = ?",
+                (format(password_hash & 0xffffffff, 'x'), name, email),
+            )
     connection.commit()
     connection.close()
 
@@ -66,6 +84,8 @@ init_database()
 
 
 def cached_catalog_response():
+    if DEPLOY_CATALOG.exists():
+        return send_from_directory(BASE_DIR, DEPLOY_CATALOG.name, mimetype="application/json")
     if not CATALOG_CACHE.exists():
         return None
     try:
@@ -161,8 +181,11 @@ def auth_signup():
     name = str(data.get("name", "")).strip()
     email = str(data.get("email", "")).strip().lower()
     password_hash = str(data.get("passwordHash", "")).strip()
+    password = str(data.get("password", "")).strip()
     if not user_id or not name or not email or not password_hash:
         return jsonify({"error": "All account fields are required."}), 400
+    if len(password) < 6 or not any(char in "!@#$%^&*()-_=+[]{};:,.<>/?\\|`~" for char in password):
+        return jsonify({"error": "Password must be at least 6 characters and include a special character."}), 400
     connection = db()
     if connection.execute("SELECT 1 FROM users WHERE email = ?", (email,)).fetchone():
         connection.close()
@@ -215,6 +238,10 @@ def update_user(user_id):
     if "name" in data:
         connection.execute("UPDATE users SET name = ? WHERE id = ?", (str(data["name"]).strip(), user_id))
     if "passwordHash" in data:
+        password = str(data.get("password", "")).strip()
+        if len(password) < 6 or not any(char in "!@#$%^&*()-_=+[]{};:,.<>/?\\|`~" for char in password):
+            connection.close()
+            return jsonify({"error": "Password must be at least 6 characters and include a special character."}), 400
         connection.execute("UPDATE users SET password_hash = ? WHERE id = ?", (str(data["passwordHash"]), user_id))
     if "state" in data:
         connection.execute("UPDATE users SET state = ? WHERE id = ?", (json.dumps(data["state"]), user_id))
