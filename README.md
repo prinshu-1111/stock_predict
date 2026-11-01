@@ -2,11 +2,29 @@
 
 A machine learning project that predicts next-day stock prices using linear regression and provides buy/sell recommendations based on Alpha Vantage market data.
 
-## API Key
+## API configuration
 
-**Current API Key:** `R17S42MMBJZNO4YJ`
+Configure your own provider keys locally:
 
-*Note: This is a free Alpha Vantage API key. For production use, get your own key at: https://www.alphavantage.co/support/#api-key*
+- Alpha Vantage: https://www.alphavantage.co/support/#api-key
+- Twelve Data: https://twelvedata.com/
+
+For the Python application:
+
+```bash
+set ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key
+python stock_predictor_alphav.py --ticker AAPL
+```
+
+For the browser application, configure the keys in browser local storage (the keys are not displayed in this repository):
+
+```javascript
+localStorage.setItem('sv_alpha_vantage_key', 'your_alpha_vantage_key');
+localStorage.setItem('sv_twelve_data_key', 'your_twelve_data_key');
+location.reload();
+```
+
+Do not commit API keys to source control.
 
 ## Setup
 
@@ -20,7 +38,7 @@ pip install -r requirements.txt
 python stock_predictor_alphav.py --ticker AAPL
 ```
 
-Or with custom API key:
+Or pass a custom Alpha Vantage key at runtime:
 ```bash
 python stock_predictor_alphav.py --api-key YOUR_API_KEY --ticker AAPL
 ```

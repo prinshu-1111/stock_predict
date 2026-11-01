@@ -361,6 +361,304 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 #toast.show{opacity:1}
 #toast.err{border-color:var(--red);color:var(--red)}
 #toast.warn{border-color:var(--amber);color:var(--amber)}
+
+/* ── Refined visual system ──────────────────────────────── */
+:root{
+  --bg:#090d14;
+  --surface:#101620;
+  --card:#141b26;
+  --hover:#1b2636;
+  --border:#263244;
+  --accent:#4f8cff;
+  --accent-strong:#3974e8;
+  --t1:#f1f5fb;
+  --t2:#98a6ba;
+  --t3:#64748b;
+  --sbw:232px;
+  --hh:68px;
+  --r:12px;
+  --rl:16px;
+}
+
+html,body{
+  font-family:Inter,"Segoe UI",system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+}
+
+body{
+  background:
+    radial-gradient(circle at 78% 8%,rgba(79,140,255,.055),transparent 28rem),
+    var(--bg);
+}
+
+#hdr{
+  background:rgba(16,22,32,.94);
+  backdrop-filter:blur(18px);
+  padding:0 20px;
+}
+
+.brand{font-size:18px;letter-spacing:-.5px}
+.brand-icon{
+  box-shadow:0 8px 24px rgba(79,140,255,.25);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.hdr-pill,.cash-pill,.paper-badge,.fx{
+  backdrop-filter:blur(8px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.cash-pill{
+  color:#dffbea;
+  border-color:rgba(34,197,94,.18);
+  background:rgba(34,197,94,.09);
+}
+
+#sb{
+  padding-top:10px;
+  background:rgba(16,22,32,.88);
+  backdrop-filter:blur(16px);
+}
+
+.slabel{
+  padding:14px 18px 8px;
+  color:#536178;
+  font-size:9px;
+}
+
+.nav{
+  margin:2px 10px;
+  padding:10px 12px;
+  border:0;
+  border-radius:10px;
+  font-size:13px;
+}
+.nav:hover{background:rgba(255,255,255,.035)}
+.nav.active{
+  color:#dbe8ff;
+  background:linear-gradient(90deg,rgba(79,140,255,.16),rgba(79,140,255,.055));
+  box-shadow:inset 3px 0 0 var(--accent);
+}
+.nav-ic{font-size:15px}
+
+.wi{
+  margin:2px 10px;
+  padding:9px 10px;
+  border-radius:9px;
+}
+.wi:hover{background:rgba(255,255,255,.035)}
+.wi.sel{
+  background:rgba(79,140,255,.09);
+  box-shadow:inset 0 0 0 1px rgba(79,140,255,.12);
+}
+
+#main{background:transparent}
+.page{padding:26px 28px 32px;gap:16px}
+
+.page-heading{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:-2px;
+}
+.page-heading h1{
+  font-size:24px;
+  line-height:1.15;
+  letter-spacing:-.7px;
+  margin-bottom:5px;
+}
+.page-heading p{
+  color:var(--t2);
+  font-size:12.5px;
+}
+
+.pt-banner{
+  border-color:rgba(245,158,11,.16);
+  background:rgba(245,158,11,.055);
+  color:#d6a64b;
+  font-size:11px;
+}
+
+.search-wrap{
+  background:rgba(20,27,38,.92);
+  border-radius:14px;
+  box-shadow:0 16px 40px rgba(0,0,0,.12);
+}
+
+.available-tickers{
+  background:linear-gradient(145deg,rgba(20,27,38,.98),rgba(17,23,34,.98));
+  border:1px solid rgba(38,50,68,.78);
+  border-radius:var(--rl);
+  padding:16px;
+}
+.available-tickers-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:13px;
+}
+.available-tickers-count{font-size:11px;color:var(--t3)}
+.ticker-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ticker-option{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
+  border:1px solid rgba(38,50,68,.9);border-radius:10px;background:#101722;color:var(--t1);
+  padding:10px 11px;cursor:pointer;text-align:left;font-family:inherit;
+  transition:transform .15s,border-color .15s,background .15s;
+}
+.ticker-option:hover{transform:translateY(-1px);border-color:rgba(79,140,255,.58);background:#172131}
+.ticker-option-symbol{font-size:12px;font-weight:800}
+.ticker-option-name{display:block;margin-top:2px;overflow:hidden;color:var(--t3);font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.ticker-option-arrow{color:var(--accent);font-size:13px}
+.ticker-browser-tools{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ticker-browser-search{
+  flex:1;background:#0d121c;border:1px solid rgba(38,50,68,.9);border-radius:9px;
+  padding:9px 11px;color:var(--t1);font-family:inherit;outline:none;
+}
+.ticker-browser-search:focus{border-color:rgba(79,140,255,.65)}
+.ticker-load-more{display:none;margin:12px auto 0;padding:8px 18px}
+
+.kpi,.mc,.cpanel,.ppanel,.spanel,.trade-panel{
+  background:linear-gradient(145deg,rgba(20,27,38,.98),rgba(17,23,34,.98));
+  border-color:rgba(38,50,68,.78);
+  box-shadow:0 12px 32px rgba(0,0,0,.09),inset 0 1px 0 rgba(255,255,255,.018);
+}
+
+.kpi,.mc{
+  position:relative;
+  overflow:hidden;
+}
+.kpi::after,.mc::after{
+  content:"";
+  position:absolute;
+  width:70px;
+  height:70px;
+  right:-30px;
+  top:-38px;
+  border-radius:50%;
+  background:rgba(79,140,255,.035);
+}
+
+.kpi-val,.mc-val{color:#f8fafc}
+.kpi-label,.mc-label,.ptitle{color:#78869b}
+
+.db-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+.card-grid-adjust{min-width:0}
+
+.abtn,.auth-btn{
+  background:linear-gradient(135deg,var(--accent),var(--accent-strong));
+  box-shadow:0 7px 18px rgba(79,140,255,.18);
+}
+
+.tabs,.trade-tabs{
+  background:#0d121c;
+  border-color:#202b3b;
+}
+.tab.active{background:#1b2433;color:#fff}
+
+.htable th{
+  color:#627087;
+  border-color:rgba(38,50,68,.8);
+}
+.htable td{border-color:rgba(38,50,68,.48)}
+.htable tr:hover td{background:rgba(79,140,255,.035)}
+
+.qa-btn{
+  background:#111824;
+  border-color:#263244;
+}
+.qa-btn:hover{
+  border-color:rgba(79,140,255,.55);
+  background:#172131;
+}
+
+.tx-item{
+  border-bottom-color:rgba(38,50,68,.55);
+}
+
+.user-dropdown{
+  background:#151d29;
+  box-shadow:0 18px 50px rgba(0,0,0,.5);
+}
+
+.exec-btn.buy{background:linear-gradient(135deg,#24c875,#16a05a)}
+.exec-btn.sell{background:linear-gradient(135deg,#f05252,#d93636)}
+
+#toast{
+  background:rgba(21,29,41,.96);
+  backdrop-filter:blur(12px);
+  box-shadow:0 14px 40px rgba(0,0,0,.35);
+}
+
+@media(max-width:1180px){
+  :root{--sbw:210px}
+  .db-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fx,#clock{display:none}
+}
+
+@media(max-width:860px){
+  :root{--hh:62px}
+  #app{
+    grid-template-columns:1fr;
+    grid-template-rows:var(--hh) minmax(0,1fr) 68px;
+    grid-template-areas:"hdr" "main" "sb";
+  }
+  #hdr{padding:0 12px}
+  .brand{min-width:0;font-size:16px}
+  .paper-badge,.hdr-pill,#clock,.fx{display:none}
+  .cash-pill{margin-left:auto;padding:5px 9px;font-size:11px}
+  .user-name-hdr{display:none}
+  #sb{
+    flex-direction:row;
+    align-items:center;
+    padding:7px 8px;
+    border-right:0;
+    border-top:1px solid var(--border);
+    overflow:hidden;
+  }
+  .slabel,.wl-scroll{display:none}
+  .nav{
+    flex:1;
+    justify-content:center;
+    margin:0 2px;
+    padding:9px 3px;
+    font-size:9px;
+    flex-direction:column;
+    gap:3px;
+    border-radius:9px;
+  }
+  .nav.active{box-shadow:inset 0 -2px 0 var(--accent)}
+  .nav-ic{font-size:17px;width:auto}
+  .page{padding:18px 14px 24px}
+  .page-heading h1{font-size:21px}
+  .db-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .db-row2,.db-row3,.brow{grid-template-columns:1fr}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:520px){
+  .brand-icon{width:30px;height:30px}
+  .cash-pill{font-size:0}
+  .cash-pill span{font-size:11px}
+  .user-btn{padding-right:5px}
+  .page-heading{display:none}
+  .db-kpis{grid-template-columns:1fr 1fr}
+  .cards{grid-template-columns:1fr 1fr;gap:8px}
+  .ticker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi,.mc{padding:13px 12px}
+  .kpi-val{font-size:16px}
+  .mc-val{font-size:18px}
+  .pt-banner{font-size:10px}
+  .search-wrap{padding:8px 10px}
+  #ticker{min-width:0;font-size:13px}
+  .abtn{padding:8px 12px}
+  .id-row{flex-direction:column}
+  #id-price{font-size:27px}
+  .cpanel,.ppanel,.spanel,.trade-panel{padding:15px}
+  .db-row2{grid-template-columns:1fr !important}
+}
 </style>
 </head>
 <body>
@@ -495,6 +793,9 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 
     <!-- ── DASHBOARD ───────────────────────────────────── -->
     <div class="page active" id="page-dash">
+      <div class="page-heading">
+        <div><h1>Market overview</h1><p>Monitor your portfolio and trading activity.</p></div>
+      </div>
       <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <div class="db-kpis">
         <div class="kpi tb-blue"><div class="kpi-label">Portfolio Value</div><div class="kpi-val" id="kpi-total">₹1,00,000</div><div class="kpi-sub">Cash + Holdings</div></div>
@@ -527,6 +828,9 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 
     <!-- ── ANALYTICS ───────────────────────────────────── -->
     <div class="page" id="page-analytics">
+      <div class="page-heading">
+        <div><h1>Stock analytics</h1><p>Research a symbol and simulate your next trade.</p></div>
+      </div>
       <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <!-- API error banner — shown when rate limit hit -->
       <div class="api-err-banner" id="api-err-banner">
@@ -538,6 +842,17 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
         <input id="ticker" type="text" placeholder="Search ticker — AAPL, TSLA, NVDA, MSFT…" maxlength="10" autocomplete="off">
         <button class="abtn" id="analyzeBtn" onclick="runAnalysis()">Analyze</button>
       </div>
+      <section class="available-tickers" aria-labelledby="available-tickers-title">
+        <div class="available-tickers-header">
+          <span class="ptitle" id="available-tickers-title">Available Tickers</span>
+          <span class="available-tickers-count" id="availableTickerCount">Loading supported stocks...</span>
+        </div>
+        <div class="ticker-browser-tools">
+          <input class="ticker-browser-search" id="availableTickerSearch" type="search" placeholder="Filter all loaded tickers..." oninput="filterAvailableTickers(this.value)" autocomplete="off">
+        </div>
+        <div class="ticker-grid" id="availableTickerGrid"></div>
+        <button class="abtn ticker-load-more" id="tickerLoadMore" type="button" onclick="loadMoreAvailableTickers()">Load more</button>
+      </section>
       <div id="welcome">
         <div class="wlc-icon">📉📈</div>
         <div class="wlc-title">Select a stock to analyze &amp; trade</div>
@@ -592,6 +907,9 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 
     <!-- ── PORTFOLIO ───────────────────────────────────── -->
     <div class="page" id="page-portfolio">
+      <div class="page-heading">
+        <div><h1>Your portfolio</h1><p>Review holdings, allocation, and performance.</p></div>
+      </div>
       <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <div class="db-kpis">
         <div class="kpi tb-blue"><div class="kpi-label">Portfolio Value</div><div class="kpi-val" id="p-kpi-total">—</div><div class="kpi-sub">Cash + Holdings</div></div>
@@ -608,6 +926,9 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 
     <!-- ── TRANSACTIONS ────────────────────────────────── -->
     <div class="page" id="page-transactions">
+      <div class="page-heading">
+        <div><h1>Transaction history</h1><p>Track every simulated buy and sell order.</p></div>
+      </div>
       <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <div class="cpanel" style="flex:1">
         <div class="cp-hdr"><span class="ptitle">Transaction History</span><span id="tx-count" style="font-size:12px;color:var(--t3)">0 transactions</span></div>
@@ -617,6 +938,9 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 
     <!-- ── SETTINGS ────────────────────────────────────── -->
     <div class="page" id="page-settings">
+      <div class="page-heading">
+        <div><h1>Account settings</h1><p>Manage your profile and virtual portfolio.</p></div>
+      </div>
       <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <div class="db-row2" style="grid-template-columns:1fr 1fr">
 
@@ -726,7 +1050,8 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 /* ════════════════════════════════════════════════════════════
    CONSTANTS
 ════════════════════════════════════════════════════════════ */
-const API_KEY    = 'R17S42MMBJZNO4YJ';
+const API_KEY = localStorage.getItem('sv_alpha_vantage_key') || '';
+const TWELVE_DATA_API_KEY = localStorage.getItem('sv_twelve_data_key') || '';
 const INR_RATE   = 83.5;
 const START_CASH = 100000;
 
@@ -875,8 +1200,7 @@ function bootApp(user){
   document.getElementById('settings-joined').textContent = 'Member since '+new Date(user.createdAt).toLocaleDateString('en-IN',{year:'numeric',month:'long'});
 
   updateHeaderCash();
-  showPage('dash');
-  renderWatchlist();
+  setTimeout(()=>{showPage('dash');renderWatchlist();},0);
 }
 
 /* ── Auto-login on page load ────────────────────────────── */
@@ -981,6 +1305,8 @@ const WATCHLIST=[
   {sym:'JNJ',name:'Johnson & Johnson'},{sym:'V',name:'Visa Inc.'},{sym:'PG',name:'Procter & Gamble'},
   {sym:'UNH',name:'UnitedHealth Group'},{sym:'HD',name:'Home Depot Inc.'},{sym:'MA',name:'Mastercard Inc.'},
 ];
+let availableTickers=[],filteredAvailableTickers=[],availableTickerLimit=40;
+
 function renderWatchlist(){
   const el=document.getElementById('wlList');
   el.innerHTML=WATCHLIST.map(s=>`
@@ -988,6 +1314,84 @@ function renderWatchlist(){
       <div class="wi-l"><div class="wi-sym">${s.sym}</div><div class="wi-name">${s.name}</div></div>
       <div class="wi-r"><div class="wi-chg" id="wchg-${s.sym}">—</div></div>
     </div>`).join('');
+
+  loadAvailableTickers();
+}
+
+async function loadAvailableTickers(){
+  const grid=document.getElementById('availableTickerGrid');
+  const count=document.getElementById('availableTickerCount');
+  if(!grid)return;
+  const fetchWithTimeout=(request,timeout=12000)=>Promise.race([
+    request,
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error('Ticker catalog request timed out')),timeout))
+  ]);
+  const twelvePromise=fetchWithTimeout(fetch(`https://api.twelvedata.com/stocks?apikey=${TWELVE_DATA_API_KEY}`).then(r=>r.json()));
+  const alphaPromise=fetchWithTimeout(fetch(`https://www.alphavantage.co/query?function=LISTING_STATUS&apikey=${API_KEY}`).then(r=>r.text()));
+
+  const [twelveResult,alphaResult]=await Promise.allSettled([twelvePromise,alphaPromise]);
+  const merged=new Map();
+
+  if(twelveResult.status==='fulfilled'){
+    const rows=Array.isArray(twelveResult.value?.data)?twelveResult.value.data:[];
+    rows.forEach(row=>{
+      const symbol=String(row.symbol||'').trim().toUpperCase();
+      if(symbol) merged.set(symbol,{sym:symbol,name:row.name||row.symbol,exchange:row.exchange||''});
+    });
+  }
+
+  if(alphaResult.status==='fulfilled'){
+    const lines=alphaResult.value.split(/\r?\n/).filter(Boolean);
+    for(let i=1;i<lines.length;i++){
+      const columns=lines[i].split(',');
+      const symbol=(columns[0]||'').trim().toUpperCase();
+      if(!symbol)continue;
+      if(!merged.has(symbol)) merged.set(symbol,{sym:symbol,name:(columns[1]||symbol).replace(/^"|"$/g,''),exchange:(columns[3]||'').replace(/^"|"$/g,'')});
+    }
+  }
+
+  if(!merged.size)WATCHLIST.forEach(stock=>merged.set(stock.sym,{sym:stock.sym,name:stock.name,exchange:''}));
+  availableTickers=[...merged.values()].sort((a,b)=>a.sym.localeCompare(b.sym));
+  filteredAvailableTickers=availableTickers;
+  availableTickerLimit=40;
+  if(count)count.textContent=availableTickers.length+' tickers loaded';
+  renderAvailableTickerPage();
+}
+
+function tickerHtml(stock){
+  const safeSymbol=stock.sym.replace(/[^A-Z0-9.^=-]/g,'');
+  const company=stock.name||stock.sym;
+  return `<button class="ticker-option" type="button" onclick="selectStock('${safeSymbol}')" title="Analyze ${company}">
+    <span><span class="ticker-option-symbol">${safeSymbol}</span><span class="ticker-option-name">${company}</span></span>
+    <span class="ticker-option-arrow">→</span>
+  </button>`;
+}
+
+function renderAvailableTickerPage(){
+  const grid=document.getElementById('availableTickerGrid');
+  const loadMore=document.getElementById('tickerLoadMore');
+  const count=document.getElementById('availableTickerCount');
+  if(!grid)return;
+  grid.innerHTML=filteredAvailableTickers.slice(0,availableTickerLimit).map(tickerHtml).join('');
+  if(count)count.textContent=filteredAvailableTickers.length+' tickers found';
+  if(loadMore){
+    loadMore.style.display=availableTickerLimit<filteredAvailableTickers.length?'block':'none';
+    loadMore.textContent='Load more ('+(filteredAvailableTickers.length-availableTickerLimit)+' remaining)';
+  }
+}
+
+function filterAvailableTickers(query){
+  const normalized=query.trim().toLowerCase();
+  filteredAvailableTickers=availableTickers.filter(stock=>
+    stock.sym.toLowerCase().includes(normalized)||String(stock.name||'').toLowerCase().includes(normalized)
+  );
+  availableTickerLimit=40;
+  renderAvailableTickerPage();
+}
+
+function loadMoreAvailableTickers(){
+  availableTickerLimit+=40;
+  renderAvailableTickerPage();
 }
 function highlightWatchItem(sym){ document.querySelectorAll('.wi').forEach(e=>e.classList.remove('sel')); const el=document.getElementById('wi-'+sym); if(el)el.classList.add('sel'); }
 
@@ -1042,52 +1446,70 @@ function runAnalysis(){
   if(!sym){showToast('Please enter a ticker symbol.','warn');return;}
   currentSymbol=sym; highlightWatchItem(sym); setLoading(true); showAnalyticsDashboard(false);
 
-  fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${API_KEY}`)
+  fetch(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(sym)}&apikey=${TWELVE_DATA_API_KEY}`)
     .then(r=>{
       if(!r.ok) throw new Error('HTTP '+r.status);
       return r.json();
     })
     .then(data=>{
-      console.log('[StockVision] GLOBAL_QUOTE response:', data);
-
-      // Check for API-level errors first
-      const apiErr = checkApiError(data);
-      if(apiErr){
-        setLoading(false);
-        showApiErrorBanner(apiErr);
-        useDemoQuote(sym);
-        return;
+      if(data.status==='error'||data.code&&(!data.close||data.close==='')){
+        throw new Error(data.message||'Ticker unavailable in Twelve Data');
       }
-
-      const q=data['Global Quote'];
-      if(!q || Object.keys(q).length===0 || !q['05. price']){
-        // Empty quote = invalid symbol
-        setLoading(false);
-        showToast('Symbol "'+sym+'" not found. Check the ticker and try again.','err');
-        return;
+      const price=parseFloat(data.close);
+      if(!Number.isFinite(price)){
+        throw new Error('No price returned for '+sym);
       }
-
-      const price  = parseFloat(q['05. price']);
-      const change = parseFloat(q['09. change']);
-      const pct    = parseFloat(q['10. change percent'].replace('%',''));
-      const high   = parseFloat(q['03. high']);
-      const low    = parseFloat(q['04. low']);
-      const volume = parseInt(q['06. volume']||0);
-      const prevCls= parseFloat(q['08. previous close']);
-
-      // Hide any previous error banner
+      const previous=parseFloat(data.previous_close)||price;
+      const change=parseFloat(data.change);
+      const pct=parseFloat(data.percent_change);
       hideApiErrorBanner();
-
       currentPrice=price;
-      renderQuote(sym,price,change,pct,high,low,volume,prevCls);
+      document.getElementById('id-meta').textContent='Twelve Data · Paper Trading';
+      renderQuote(sym,price,Number.isFinite(change)?change:price-previous,Number.isFinite(pct)?pct:(price-previous)/previous*100,parseFloat(data.high)||price,parseFloat(data.low)||price,parseInt(data.volume)||0,previous);
       setLoading(false);
       showAnalyticsDashboard(true);
       loadChart(sym);
     })
     .catch(err=>{
-      console.error('[StockVision] Fetch error:', err);
-      setLoading(false);
-      showToast('Network error — check your internet connection.','err');
+      console.warn('[StockVision] Twelve Data quote unavailable, trying Alpha Vantage:',err.message);
+      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${API_KEY}`)
+        .then(r=>{
+          if(!r.ok) throw new Error('HTTP '+r.status);
+          return r.json();
+        })
+        .then(data=>{
+          const apiErr=checkApiError(data);
+          if(apiErr){
+            setLoading(false);
+            showApiErrorBanner(apiErr);
+            useDemoQuote(sym);
+            return;
+          }
+          const q=data['Global Quote'];
+          if(!q||!q['05. price']){
+            setLoading(false);
+            showToast('Symbol "'+sym+'" not found. Check the ticker and try again.','err');
+            return;
+          }
+          const price=parseFloat(q['05. price']);
+          const change=parseFloat(q['09. change']);
+          const pct=parseFloat(q['10. change percent'].replace('%',''));
+          const high=parseFloat(q['03. high']);
+          const low=parseFloat(q['04. low']);
+          const prevCls=parseFloat(q['08. previous close']);
+          hideApiErrorBanner();
+          currentPrice=price;
+          document.getElementById('id-meta').textContent='Alpha Vantage · Paper Trading';
+          renderQuote(sym,price,change,pct,high,low,parseInt(q['06. volume']||0),prevCls);
+          setLoading(false);
+          showAnalyticsDashboard(true);
+          loadChart(sym);
+        })
+        .catch(fallbackErr=>{
+          console.error('[StockVision] Market data fetch failed:',fallbackErr);
+          setLoading(false);
+          showToast('Market data is temporarily unavailable. Please try again.','err');
+        });
     });
 }
 
@@ -1102,9 +1524,9 @@ function useDemoQuote(sym){
 /* ════════════════════════════════════════════════════════════
    RENDER QUOTE
 ════════════════════════════════════════════════════════════ */
-const fmtINR=n=>'₹'+Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+function fmtINR(n){return '₹'+Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
 const fmtUSD=n=>'$'+n.toFixed(2);
-const signed=(n)=>(n>=0?'+':'-')+'₹'+Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+function signed(n){return (n>=0?'+':'-')+'₹'+Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
 function renderQuote(sym,price,change,pct,high,low,volume,prevCls){
   volume  = volume  || 0;
@@ -1140,6 +1562,23 @@ function loadChart(sym,useFallback=false){
   if(stockChart){stockChart.destroy();stockChart=null;}
   if(useFallback){buildFallbackChart(sym);return;}
 
+  fetch(`https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(sym)}&interval=1day&outputsize=100&apikey=${TWELVE_DATA_API_KEY}`)
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.status==='error'||!data.values||!data.values.length) throw new Error(data.message||'No Twelve Data chart values');
+      const values=[...data.values].reverse();
+      const dates=values.map(v=>v.datetime);
+      const prices=values.map(v=>parseFloat(v.close)).filter(v=>Number.isFinite(v));
+      if(!prices.length) throw new Error('Invalid chart values');
+      currentDates=dates;currentPrices=prices;
+      drawChart(sym,dates,prices);
+      renderPrediction(prices);
+      document.getElementById('cloader').classList.add('hidden');
+    })
+    .catch(()=>loadAlphaVantageChart(sym));
+}
+
+function loadAlphaVantageChart(sym){
   fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${sym}&outputsize=compact&apikey=${API_KEY}`)
     .then(r=>{
       if(!r.ok) throw new Error('HTTP '+r.status);

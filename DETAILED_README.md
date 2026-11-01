@@ -488,7 +488,7 @@ GET https://www.alphavantage.co/query
 
 **Request:**
 ```python
-ts = TimeSeries(key='R17S42MMBJZNO4YJ', output_format='pandas')
+ts = TimeSeries(key=os.environ['ALPHA_VANTAGE_API_KEY'], output_format='pandas')
 data, meta = ts.get_daily(symbol='AAPL', outputsize='full')
 ```
 

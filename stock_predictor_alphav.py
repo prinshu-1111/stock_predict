@@ -8,8 +8,9 @@ from sklearn.linear_model import LinearRegression  # This is our AI model for pr
 from sklearn.model_selection import train_test_split  # This splits our data for training
 from alpha_vantage.timeseries import TimeSeries  # This gets real stock data from the internet
 
-# This is our free API key to get stock data - you can get your own from Alpha Vantage website
-API_KEY = 'R17S42MMBJZNO4YJ'  # This key lets us download stock prices
+# Read the provider key from the environment; never commit API credentials.
+import os
+API_KEY = os.environ.get('ALPHA_VANTAGE_API_KEY', '')
 
 def is_indian_stock(ticker):
     """Check if the ticker is for an Indian stock"""
@@ -78,7 +79,7 @@ def main():
         API_KEY = args.api_key
     
     # Check if someone forgot to set up an API key properly
-    if API_KEY == 'YOUR_API_KEY':
+    if not API_KEY or API_KEY == 'YOUR_API_KEY':
         print("Please provide an Alpha Vantage API key!")
         print("You can get a free key at: https://www.alphavantage.co/support/#api-key")
         print("Then run the script with: --api-key YOUR_KEY")
