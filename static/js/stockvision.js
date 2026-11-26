@@ -818,7 +818,7 @@ function loadChart(sym){
 }
 
 function loadAlphaVantageChart(sym,requestId){
-  fetch(`/api/alpha?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(sym)}&outputsize=full`)
+  fetch(`/api/alpha?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(sym)}&outputsize=compact`)
     .then(r=>{
       if(!r.ok)throw new Error('HTTP '+r.status);
       return r.json();
