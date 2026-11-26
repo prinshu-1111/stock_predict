@@ -8,13 +8,18 @@ import time
 import sqlite3
 import shutil
 
-from flask import Flask, Response, jsonify, request, send_from_directory
+from flask import Flask, Response, jsonify, render_template, request, send_from_directory
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
-app = Flask(__name__, static_folder=str(BASE_DIR), static_url_path="")
+app = Flask(
+    __name__,
+    static_folder=str(BASE_DIR / "static"),
+    static_url_path="/static",
+    template_folder=str(BASE_DIR / "templates"),
+)
 CATALOG_CACHE = BASE_DIR / ".ticker_catalog_cache.json"
 DEPLOY_CATALOG = BASE_DIR / "ticker_catalog.json"
 CATALOG_CACHE_MAX_AGE = 24 * 60 * 60
@@ -135,8 +140,9 @@ def provider_request(provider, endpoint, params):
 
 
 @app.get("/")
+@app.get("/Stock_market_main_index.html")
 def home():
-    return Response((BASE_DIR / "Stock_market_main_index.html").read_bytes(), mimetype="text/html")
+    return render_template("index.html")
 
 
 @app.get("/api/twelve/<endpoint>")

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockVision — Virtual Trading Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="/static/css/stockvision.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-wrap">
+
+    <div class="auth-brand">
+      <div class="auth-brand-icon">↗</div>
+      <span class="auth-brand-name">StockVision</span>
+    </div>
+
+    <!-- SIGN IN PANEL -->
+    <div id="panel-signin" class="auth-card">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-subtitle">Sign in to your virtual trading account</div>
+      <div class="global-err" id="si-global-err"></div>
+      <div class="auth-form">
+        <div class="af-group">
+          <label class="af-label" for="si-email">Email</label>
+          <input class="af-input" id="si-email" type="email" placeholder="you@example.com" autocomplete="email">
+          <span class="af-err" id="si-email-err"></span>
+        </div>
+        <div class="af-group">
+          <label class="af-label" for="si-pass">Password</label>
+          <input class="af-input" id="si-pass" type="password" placeholder="Your password" autocomplete="current-password">
+          <span class="af-err" id="si-pass-err"></span>
+        </div>
+        <button class="auth-btn" id="si-btn" onclick="doSignIn()">Sign In</button>
+      </div>
+      <div class="auth-switch">
+        Don't have an account? <button class="auth-link" type="button" onclick="showAuthPanel('signup')">Create Account</button>
+      </div>
+      <div class="auth-pt-note">Paper trading — all virtual money, no real funds</div>
+    </div>
+
+    <!-- SIGN UP PANEL -->
+    <div id="panel-signup" class="auth-card" style="display:none">
+      <div class="auth-title">Create Account</div>
+      <div class="auth-subtitle">Start with ₹1,00,000 virtual cash</div>
+      <div class="global-err" id="su-global-err"></div>
+      <div class="auth-form">
+        <div class="af-group">
+          <label class="af-label" for="su-name">Full Name</label>
+          <input class="af-input" id="su-name" type="text" placeholder="John Doe" autocomplete="name">
+          <span class="af-err" id="su-name-err"></span>
+        </div>
+        <div class="af-group">
+          <label class="af-label" for="su-email">Email</label>
+          <input class="af-input" id="su-email" type="email" placeholder="you@example.com" autocomplete="email">
+          <span class="af-err" id="su-email-err"></span>
+        </div>
+        <div class="af-group">
+          <label class="af-label" for="su-pass">Password</label>
+          <input class="af-input" id="su-pass" type="password" placeholder="Min. 6 chars + symbol" autocomplete="new-password" oninput="updatePwStrength(this.value)">
+          <div class="pw-strength">
+            <div class="pw-bar-bg"><div class="pw-bar-fill" id="pw-bar" style="width:0%;background:var(--red)"></div></div>
+            <span class="pw-hint" id="pw-hint">Enter a password</span>
+          </div>
+          <span class="af-err" id="su-pass-err"></span>
+        </div>
+        <div class="af-group">
+          <label class="af-label" for="su-confirm">Confirm Password</label>
+          <input class="af-input" id="su-confirm" type="password" placeholder="Repeat password" autocomplete="new-password">
+          <span class="af-err" id="su-confirm-err"></span>
+        </div>
+        <button class="auth-btn" id="su-btn" onclick="doSignUp()">Create Account</button>
+      </div>
+      <div class="auth-switch">
+        Already have an account? <button class="auth-link" type="button" onclick="showAuthPanel('signin')">Sign In</button>
+      </div>
+      <div class="auth-pt-note">Paper trading — all virtual money, no real funds</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     APP (hidden until logged in)
+══════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <header id="hdr">
+    <div class="brand"><div class="brand-icon">↗</div>StockVision</div>
+    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Collapse sidebar" title="Collapse sidebar" aria-expanded="true" onclick="toggleSidebar()">‹</button>
+    <div class="spacer"></div>
+    <div class="paper-badge">PAPER TRADING</div>
+    <div class="hdr-pill"><div class="dot"></div><span id="market-label">Market Open</span></div>
+    <div class="cash-pill"><span class="cash-label">CASH</span><span id="hdr-cash">₹1,00,000</span></div>
+    <div class="fx">USD · INR ₹83.5</div>
+    <div id="clock">--:--:--</div>
+
+    <!-- User menu -->
+    <div class="user-menu-wrap" id="user-menu-wrap">
+      <button class="user-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-dropdown" onclick="toggleUserMenu()">
+        <div class="user-avatar" id="hdr-avatar">J</div>
+        <span class="user-name-hdr" id="hdr-username">User</span>
+        <span class="user-arrow">▾</span>
+      </button>
+      <div class="user-dropdown" id="user-dropdown" role="menu">
+        <div class="ud-header">
+          <div class="ud-name" id="ud-name">—</div>
+          <div class="ud-email" id="ud-email">—</div>
+        </div>
+        <button class="ud-item" type="button" role="menuitem" onclick="showPage('dash');closeUserMenu()">Dashboard</button>
+        <button class="ud-item" type="button" role="menuitem" onclick="showPage('watchlist');closeUserMenu()">Watchlist</button>
+        <button class="ud-item" type="button" role="menuitem" onclick="showPage('portfolio');closeUserMenu()">Portfolio</button>
+        <div class="ud-sep"></div>
+        <button class="ud-item" type="button" role="menuitem" onclick="showPage('settings');closeUserMenu()">Account Settings</button>
+        <div class="ud-sep"></div>
+        <button class="ud-item danger" type="button" role="menuitem" onclick="doSignOut()">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside id="sb">
+    <div class="slabel">Navigation</div>
+    <button class="nav active" type="button" data-page="dash" title="Dashboard"><span class="nav-ic" aria-hidden="true">D</span><span class="nav-label">Dashboard</span></button>
+    <button class="nav" type="button" data-page="analytics" title="Analytics"><span class="nav-ic" aria-hidden="true">A</span><span class="nav-label">Analytics</span></button>
+    <button class="nav" type="button" data-page="watchlist" title="Watchlist"><span class="nav-ic" aria-hidden="true">W</span><span class="nav-label">Watchlist</span></button>
+    <button class="nav" type="button" data-page="portfolio" title="Portfolio"><span class="nav-ic" aria-hidden="true">P</span><span class="nav-label">Portfolio</span></button>
+    <button class="nav" type="button" data-page="transactions" title="Transactions"><span class="nav-ic" aria-hidden="true">T</span><span class="nav-label">Transactions</span></button>
+    <button class="nav" type="button" data-page="settings" title="Settings"><span class="nav-ic" aria-hidden="true">S</span><span class="nav-label">Settings</span></button>
+    <div class="slabel" style="margin-top:8px">Watchlist</div>
+    <div class="wl-scroll" id="wlList"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- ── DASHBOARD ───────────────────────────────────── -->
+    <div class="page active" id="page-dash">
+      <div class="page-heading">
+        <div><h1>Market overview</h1><p>Monitor your portfolio and trading activity.</p></div>
+      </div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="db-kpis">
+        <div class="kpi tb-blue"><div class="kpi-label">Portfolio Value</div><div class="kpi-val" id="kpi-total">₹1,00,000</div><div class="kpi-sub">Cash + market value</div></div>
+        <div class="kpi tb-green"><div class="kpi-label">Available Cash</div><div class="kpi-val" id="kpi-cash">₹1,00,000</div><div class="kpi-sub">Ready to invest</div></div>
+        <div class="kpi tb-amber"><div class="kpi-label">Total Invested</div><div class="kpi-val" id="kpi-invested">₹0</div><div class="kpi-sub">Deployed capital</div></div>
+        <div class="kpi"><div class="kpi-label">Total P&amp;L</div><div class="kpi-val" id="kpi-pnl" style="color:var(--t2)">₹0</div><div class="kpi-sub" id="kpi-pnl-pct">0.00%</div></div>
+        <div class="kpi tb-purple"><div class="kpi-label">Holdings</div><div class="kpi-val" id="kpi-holdings">0</div><div class="kpi-sub">Unique stocks</div></div>
+      </div>
+      <div class="db-row2">
+        <div class="cpanel"><div class="cp-hdr"><span class="ptitle">Portfolio Performance</span></div><div class="chart-small"><canvas id="perfChart"></canvas></div></div>
+        <div class="cpanel"><div class="cp-hdr"><span class="ptitle">Allocation</span></div><div class="chart-small"><canvas id="allocChart"></canvas></div></div>
+      </div>
+      <div class="db-row3">
+        <div class="cpanel">
+          <div class="cp-hdr"><span class="ptitle">Current Holdings</span><button class="abtn" style="padding:6px 14px;font-size:12px" onclick="showPage('analytics')">+ Trade</button></div>
+          <div class="htable-wrap"><table class="htable"><thead><tr><th>Stock</th><th>Qty</th><th>Avg Cost</th><th>Curr Price</th><th>P&amp;L</th></tr></thead><tbody id="holdings-tbody"></tbody></table></div>
+        </div>
+        <div class="cpanel"><div class="cp-hdr"><span class="ptitle">Recent Transactions</span></div><div class="tx-list" id="db-tx-list"></div></div>
+      </div>
+      <div class="cpanel">
+        <div class="cp-hdr"><span class="section-title">Watchlist</span><button class="btn-ghost compact" type="button" onclick="showPage('watchlist')">View watchlist</button></div>
+        <div class="htable-wrap"><table class="htable"><thead><tr><th>Stock</th><th>Company</th><th>Last analyzed</th><th></th></tr></thead><tbody id="dashboard-watchlist"></tbody></table></div>
+      </div>
+      <div class="cpanel">
+        <div class="cp-hdr"><span class="ptitle">Quick Actions</span></div>
+        <div class="qa-grid">
+          <button class="qa-btn" onclick="showPage('analytics')"><span class="qa-ic">↗</span>Analyze &amp; Trade a Stock</button>
+          <button class="qa-btn" onclick="showPage('portfolio')"><span class="qa-ic">P</span>View Full Portfolio</button>
+          <button class="qa-btn" onclick="showPage('transactions')"><span class="qa-ic">T</span>Transaction History</button>
+          <button class="qa-btn" onclick="confirmReset()"><span class="qa-ic">↻</span>Reset Virtual Account</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ───────────────────────────────────── -->
+    <div class="page" id="page-analytics">
+      <div class="page-heading">
+        <div><h1>Stock analytics</h1><p>Research a symbol and simulate your next trade.</p></div>
+      </div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <!-- API error banner — shown when rate limit hit -->
+      <div class="api-err-banner" id="api-err-banner">
+        <span class="api-err-icon">!</span>
+        <span id="api-err-msg">API limit reached.</span>
+      </div>
+      <section class="stock-picker" aria-labelledby="stock-picker-title">
+        <div class="stock-picker-heading">
+          <div>
+            <div class="stock-picker-title" id="stock-picker-title">Find a stock</div>
+            <div class="stock-picker-hint">Search by company name or ticker symbol.</div>
+          </div>
+          <span class="available-tickers-count" id="availableTickerCount" aria-live="polite">Loading stock directory...</span>
+        </div>
+        <div class="search-wrap stock-search-wrap" role="search">
+          <span class="s-ic" aria-hidden="true">⌕</span>
+          <input id="ticker" type="search" role="combobox" aria-label="Search stocks by company name or ticker symbol" aria-autocomplete="list" aria-expanded="false" aria-controls="tickerSuggestions" placeholder="Try Apple or AAPL" maxlength="32" autocomplete="off">
+          <button class="abtn" id="analyzeBtn" type="button" onclick="runAnalysis()">Analyze</button>
+        </div>
+        <div class="ticker-suggestions" id="tickerSuggestions" role="listbox" aria-label="Stock search results" hidden></div>
+      </section>
+      <div id="welcome">
+        <div class="wlc-icon">↗</div>
+        <div class="wlc-title">Select a stock to analyze &amp; trade</div>
+        <div class="wlc-sub">Pick a ticker from the watchlist, or type a custom symbol.<br>You have <strong id="wlc-cash">₹1,00,000</strong> virtual cash available.</div>
+      </div>
+      <div id="identity">
+        <div class="id-row">
+          <div class="id-l"><div class="id-tname"><span id="id-sym">AAPL</span><span id="id-name">—</span></div><div id="id-meta">Alpha Vantage · Paper Trading</div></div>
+          <div style="text-align:right"><div class="id-r"><span id="id-price">—</span><span id="id-chg">—</span></div><div id="id-inr" style="color:var(--t3);font-size:12px">—</div></div>
+        </div>
+      </div>
+      <div class="cards" id="cards" style="display:none">
+        <div class="mc tb-blue"><div class="mc-label">Current Price</div><div class="mc-val" id="mc-price">—</div><div class="mc-sub">USD · Provider quote</div></div>
+        <div class="mc tb-green"><div class="mc-label">Day Change</div><div class="mc-val" id="mc-change">—</div><div class="mc-sub" id="mc-change-sub">vs. prev. close</div></div>
+        <div class="mc tb-amber"><div class="mc-label">Day High</div><div class="mc-val" id="mc-high">—</div><div class="mc-sub">Session high</div></div>
+        <div class="mc tb-red"><div class="mc-label">Day Low</div><div class="mc-val" id="mc-low">—</div><div class="mc-sub">Session low</div></div>
+        <div class="mc"><div class="mc-label">Previous Close</div><div class="mc-val" id="mc-prev-close">—</div><div class="mc-sub">Prior session</div></div>
+        <div class="mc"><div class="mc-label">Trading Volume</div><div class="mc-val" id="mc-volume">—</div><div class="mc-sub">Shares traded</div></div>
+      </div>
+      <div class="cpanel" id="chartPanel" style="display:none">
+        <div class="cp-hdr">
+          <span class="ptitle">Price History</span>
+          <div class="tabs">
+            <button class="tab" onclick="setTab(this,'1D')">1D</button>
+            <button class="tab" onclick="setTab(this,'1W')">1W</button>
+            <button class="tab active" onclick="setTab(this,'1M')">1M</button>
+            <button class="tab" onclick="setTab(this,'3M')">3M</button>
+            <button class="tab" onclick="setTab(this,'1Y')">1Y</button>
+          </div>
+        </div>
+        <div class="cw"><canvas id="stockChart"></canvas><div class="cloader" id="cloader"><div class="spin" style="border-color:var(--border);border-top-color:var(--accent)"></div><span id="chartLoadingText">Loading chart data…</span></div><div class="chart-error" id="chartError" hidden><span id="chartErrorText">Price history is unavailable.</span><button class="btn-ghost compact" type="button" onclick="loadChart(currentSymbol)">Retry</button></div></div>
+        <div class="volume-panel"><div class="ptitle">Trading Volume</div><div class="volume-cw"><canvas id="volumeChart"></canvas><div id="volumeEmpty" class="chart-empty">Volume data is unavailable for this period.</div></div></div>
+      </div>
+      <div class="brow" id="brow" style="display:none">
+        <div class="ppanel">
+          <span class="ptitle">Next-Day Prediction</span>
+          <div class="prow"><span id="pred-p">—</span><span id="pred-c">—</span></div>
+          <div class="pmeta" id="pred-meta">Trend extrapolation using recent closing prices.</div>
+          <div class="prediction-disclaimer">A simple trend estimate for learning only. Not financial advice.</div>
+        </div>
+        <div class="spanel"><span class="ptitle">Market Signal</span><div class="sig-body"><div class="sig-badge" id="sig-badge">—</div><div class="sig-desc" id="sig-desc">—</div></div></div>
+      </div>
+      <div class="trade-panel" id="tradePanel" style="display:none">
+        <div class="cp-hdr"><span class="ptitle">Place Order</span><span style="font-size:11px;color:var(--t3)">Available: <strong id="trade-cash-disp" style="color:var(--green)">₹1,00,000</strong></span></div>
+        <div class="trade-tabs"><button class="trade-tab buy-active" id="ttab-buy" onclick="switchTradeSide('buy')">BUY</button><button class="trade-tab" id="ttab-sell" onclick="switchTradeSide('sell')">SELL</button></div>
+        <div class="trade-input-row"><div class="t-label">Quantity (Shares)</div><input class="t-input" type="number" id="trade-qty" min="1" step="1" placeholder="e.g. 5" oninput="updateOrderSummary()"></div>
+        <div class="t-summary" id="order-summary" style="display:none">
+          <div class="t-row"><span>Price per share</span><strong id="os-price">—</strong></div>
+          <div class="t-row"><span>Quantity</span><strong id="os-qty">—</strong></div>
+          <div class="t-row"><span>Total Value</span><strong id="os-total">—</strong></div>
+          <div class="t-row"><span id="os-after-label">Cash after trade</span><strong id="os-after">—</strong></div>
+        </div>
+        <button class="exec-btn buy" id="exec-btn" onclick="openConfirmModal()">Review Order</button>
+      </div>
+    </div>
+
+    <!-- ── WATCHLIST ───────────────────────────────────── -->
+    <div class="page" id="page-watchlist">
+      <div class="page-heading">
+        <div><h1>Your watchlist</h1><p>Keep an eye on symbols you want to research.</p></div>
+      </div>
+      <div class="watchlist-toolbar">
+        <label class="sr-only" for="watchlist-search">Filter watchlist</label>
+        <input class="t-input" id="watchlist-search" type="search" placeholder="Filter by company or symbol" autocomplete="off">
+        <div class="watchlist-add">
+          <label class="sr-only" for="watchlist-add-input">Add a stock by name or ticker</label>
+          <input class="t-input" id="watchlist-add-input" type="search" placeholder="Add a symbol or company" autocomplete="off">
+          <button class="abtn" type="button" onclick="addWatchlistStock()">Add stock</button>
+        </div>
+      </div>
+      <div class="cpanel">
+        <div class="cp-hdr"><span class="section-title">Saved stocks</span><span class="available-tickers-count" id="watchlist-count">0 stocks</span></div>
+        <div class="htable-wrap"><table class="htable"><thead><tr><th>Symbol</th><th>Company</th><th>Last analyzed</th><th>Action</th></tr></thead><tbody id="watchlist-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ── PORTFOLIO ───────────────────────────────────── -->
+    <div class="page" id="page-portfolio">
+      <div class="page-heading">
+        <div><h1>Your portfolio</h1><p>Review holdings, allocation, and performance.</p></div>
+      </div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="db-kpis">
+        <div class="kpi tb-blue"><div class="kpi-label">Portfolio Value</div><div class="kpi-val" id="p-kpi-total">—</div><div class="kpi-sub">Cash + market value</div></div>
+        <div class="kpi tb-green"><div class="kpi-label">Available Cash</div><div class="kpi-val" id="p-kpi-cash">—</div><div class="kpi-sub">Ready to invest</div></div>
+        <div class="kpi tb-amber"><div class="kpi-label">Total Invested</div><div class="kpi-val" id="p-kpi-invested">—</div><div class="kpi-sub">Deployed capital</div></div>
+        <div class="kpi"><div class="kpi-label">Total P&amp;L</div><div class="kpi-val" id="p-kpi-pnl" style="color:var(--t2)">—</div><div class="kpi-sub" id="p-kpi-pnl-pct">—</div></div>
+        <div class="kpi tb-purple"><div class="kpi-label">Holdings</div><div class="kpi-val" id="p-kpi-holdings">—</div><div class="kpi-sub">Unique stocks</div></div>
+      </div>
+      <div class="cpanel">
+        <div class="cp-hdr"><span class="section-title">All Holdings</span></div>
+        <div class="tx-toolbar">
+          <label class="sr-only" for="portfolio-filter">Search holdings</label>
+          <input class="t-input" id="portfolio-filter" type="search" placeholder="Search symbol or company" autocomplete="off">
+          <label class="sr-only" for="portfolio-sort">Sort holdings</label>
+          <select class="t-input" id="portfolio-sort">
+            <option value="symbol">Sort: Symbol</option>
+            <option value="quantity">Sort: Quantity</option>
+            <option value="invested">Sort: Invested</option>
+          </select>
+        </div>
+        <div class="htable-wrap"><table class="htable"><thead><tr><th>Stock</th><th>Qty</th><th>Avg Cost (₹)</th><th>Current Price</th><th>Market Value</th><th>Invested</th><th>P&amp;L</th><th>P&amp;L %</th><th>Action</th></tr></thead><tbody id="portfolio-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ── TRANSACTIONS ────────────────────────────────── -->
+    <div class="page" id="page-transactions">
+      <div class="page-heading">
+        <div><h1>Transaction history</h1><p>Track every simulated buy and sell order.</p></div>
+      </div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="cpanel" style="flex:1">
+        <div class="cp-hdr"><span class="section-title">Transaction History</span><span id="tx-count" class="available-tickers-count">0 transactions</span></div>
+        <div class="tx-toolbar">
+          <label class="sr-only" for="tx-search">Search transactions</label>
+          <input class="t-input" id="tx-search" type="search" placeholder="Search ticker or company" autocomplete="off">
+          <label class="sr-only" for="tx-type">Filter transaction type</label>
+          <select class="t-input" id="tx-type"><option value="">All activity</option><option value="BUY">Buys</option><option value="SELL">Sells</option></select>
+          <label class="sr-only" for="tx-from">From date</label>
+          <input class="t-input tx-date" id="tx-from" type="date">
+          <label class="sr-only" for="tx-to">To date</label>
+          <input class="t-input tx-date" id="tx-to" type="date">
+        </div>
+        <div class="htable-wrap"><table class="htable"><thead><tr><th>#</th><th>Date &amp; Time</th><th>Type</th><th>Stock</th><th>Qty</th><th>Price/Share (₹)</th><th>Total (₹)</th><th>Cash After (₹)</th><th>Status</th><th></th></tr></thead><tbody id="tx-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ────────────────────────────────────── -->
+    <div class="page" id="page-settings">
+      <div class="page-heading">
+        <div><h1>Account settings</h1><p>Manage your profile and virtual portfolio.</p></div>
+      </div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="db-row2" style="grid-template-columns:1fr 1fr">
+
+        <!-- Account info -->
+        <div class="cpanel">
+          <div class="cp-hdr"><span class="ptitle">Account Information</span></div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div class="user-avatar" id="settings-avatar" style="width:52px;height:52px;font-size:22px;border-radius:14px">J</div>
+              <div>
+                <div style="font-size:16px;font-weight:800" id="settings-name">—</div>
+                <div style="font-size:12px;color:var(--t3);margin-top:3px" id="settings-email">—</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:2px" id="settings-joined">—</div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--border)"></div>
+            <!-- Change display name -->
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div class="t-label">Change Display Name</div>
+              <input class="t-input" id="settings-new-name" placeholder="New display name">
+              <button class="abtn" style="padding:8px 14px;font-size:12.5px" onclick="changeDisplayName()">Update Name</button>
+            </div>
+            <div style="height:1px;background:var(--border)"></div>
+            <!-- Change password -->
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div class="t-label">Change Password</div>
+              <input class="t-input" id="settings-cur-pass" type="password" placeholder="Current password">
+              <input class="t-input" id="settings-new-pass" type="password" placeholder="New password (min 6 chars + symbol)">
+              <input class="t-input" id="settings-confirm-pass" type="password" placeholder="Confirm new password">
+              <button class="abtn" style="padding:8px 14px;font-size:12.5px" onclick="changePassword()">Update Password</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="cpanel">
+            <div class="cp-hdr"><span class="ptitle">Virtual Portfolio</span></div>
+            <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:8px">Reset your virtual portfolio back to ₹1,00,000. This clears all holdings and transaction history but keeps your account.</div>
+            <button class="exec-btn sell" style="padding:10px" onclick="confirmReset()">Reset Portfolio to ₹1,00,000</button>
+          </div>
+          <div class="cpanel" style="border-color:rgba(239,68,68,.3)">
+            <div class="cp-hdr"><span class="ptitle" style="color:var(--red)">Danger Zone</span></div>
+            <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:8px">Permanently delete your account and all associated data. This cannot be undone.</div>
+            <button class="exec-btn sell" style="padding:10px" onclick="confirmDeleteAccount()">Delete My Account</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div><!-- #app -->
+
+<!-- TRADE CONFIRM MODAL -->
+<div class="modal-overlay" id="modal-overlay" aria-hidden="true">
+  <div class="modal" style="position:relative">
+    <div class="modal-title" id="modal-title">Confirm Order</div>
+    <div class="modal-body">
+      <div class="minfo"><span class="minfo-key">Stock</span><span class="minfo-val" id="m-sym">—</span></div>
+      <div class="minfo"><span class="minfo-key">Action</span><span class="minfo-val" id="m-action">—</span></div>
+      <div class="minfo"><span class="minfo-key">Quantity</span><span class="minfo-val" id="m-qty">—</span></div>
+      <div class="minfo"><span class="minfo-key">Price per Share</span><span class="minfo-val" id="m-price">—</span></div>
+      <div class="minfo" style="border:none;padding:0"><span class="minfo-key">Total Amount</span><span class="minfo-val" id="m-total">—</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm buy" id="modal-confirm-btn" onclick="executeTrade()">Confirm BUY</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="reset-modal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-title">Reset Virtual Portfolio?</div>
+    <div class="modal-body"><p style="font-size:13px;color:var(--t2);line-height:1.7">This resets cash to <strong style="color:var(--t1)">₹1,00,000</strong> and clears all holdings and transactions. Your account stays intact.</p></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="setModalVisibility('reset-modal',false)">Cancel</button>
+      <button class="modal-confirm sell" onclick="resetAccount()">Reset Portfolio</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE ACCOUNT MODAL -->
+<div class="modal-overlay" id="del-modal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--red)">Delete Account?</div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--t2);line-height:1.7">This will permanently delete your account, portfolio, and all transaction history. This cannot be undone.</p>
+      <div class="af-group" style="margin-top:4px">
+        <label class="af-label">Type your password to confirm</label>
+        <input class="af-input" id="del-pass" type="password" placeholder="Your password">
+        <span class="af-err" id="del-err"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="setModalVisibility('del-modal',false)">Cancel</button>
+      <button class="modal-confirm sell" onclick="executeDeleteAccount()">Delete Account</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay detail-modal" id="tx-detail-modal" role="dialog" aria-modal="true" aria-labelledby="tx-detail-title" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-title" id="tx-detail-title">Transaction details</div>
+    <div class="modal-body" id="tx-detail-content"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" type="button" onclick="closeTransactionDetails()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast">—</div>
+
+<script src="/static/js/stockvision.js"></script>
+</body>
+</html>

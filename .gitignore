@@ -4,3 +4,5 @@ __pycache__/
 .env.*
 *.log
 .vercel
+.ticker_catalog_cache.json
+PERSONAL_README.md

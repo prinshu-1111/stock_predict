@@ -1,135 +1,94 @@
-# StockLab - A Stock Price Prediction & Buy/Sell Suggestion
+# StockVision
 
-A machine learning project that predicts next-day stock prices using linear regression and provides buy/sell recommendations based on Alpha Vantage market data.
+StockVision is a Flask application for stock research and virtual trading, with a separate command-line stock prediction script.
 
-[Open the live dashboard](https://stock-predict-chi.vercel.app/)
+[Open the deployed dashboard](https://stock-predict-chi.vercel.app/)
 
-## API configuration
+## What it includes
 
-The web dashboard sends market-data requests through the Python server. Provider keys must be configured on that server; setting them in browser `localStorage` will not work.
+- Search a stock directory by ticker or company name and view provider quotes and historical prices.
+- Review a per-account paper-trading portfolio and transaction history.
+- Run a standalone Linear Regression prediction from the command line.
+- Use a bundled ticker catalog when a live listing is unavailable.
 
-- Alpha Vantage: https://www.alphavantage.co/support/#api-key
-- Twelve Data: https://twelvedata.com/
+All web trades use virtual funds. Predictions and market signals are educational estimates, not financial advice.
 
-For the deployed dashboard, add `ALPHA_VANTAGE_API_KEY` and/or `TWELVE_DATA_API_KEY` under your Vercel project's **Settings → Environment Variables**, then redeploy. Do not put provider keys in the HTML or browser storage.
+## Project layout
 
-For local development, create a `.env` file in the project directory:
-
-```dotenv
-ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key
-TWELVE_DATA_API_KEY=your_twelve_data_key
+```text
+.
+|-- server.py                     Flask routes, market-data proxies, and SQLite access
+|-- stock_predictor_alphav.py     Standalone prediction CLI
+|-- templates/
+|   `-- index.html                Web application markup
+|-- static/
+|   |-- css/stockvision.css       Application styles
+|   `-- js/stockvision.js         Application behavior
+|-- ticker_catalog.json           Bundled ticker directory
+|-- stockvision.db                Local account and paper-trading records
+|-- requirements.txt              Python dependencies
+`-- vercel.json                   Vercel Python deployment routing
 ```
 
-Then start the web server:
+The browser app and CLI are separate entry points. The web prediction is a simple trend estimate; the CLI uses scikit-learn Linear Regression.
+
+## Run locally
+
+Use Python 3.10 or 3.11 for compatibility with the pinned scientific Python packages.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+Create a `.env` file in the project root and add whichever provider keys you have:
+
+```dotenv
+TWELVE_DATA_API_KEY=your_twelve_data_key
+ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key
+```
+
+Start the Flask app:
 
 ```powershell
 python server.py
 ```
 
-The Python command-line application only needs the Alpha Vantage key:
+Open [http://127.0.0.1:4173](http://127.0.0.1:4173). The app needs to be served through Flask for its authentication and market-data APIs; opening the HTML file directly or using a static-only preview will not provide those APIs.
+
+## Data and database safety
+
+- `stockvision.db` contains the local account and paper-trading state. Do not delete, replace, reset, or reinitialize it if its records must be kept.
+- Importing `server.py` runs database initialization. It creates the users table if needed and may create or update the built-in demo-account rows. Back up the database before running the server against a valuable copy.
+- On Vercel, the current server code copies the bundled database to `/tmp`. That storage is ephemeral and is not suitable for durable account records across serverless instances or restarts.
+- Keep provider keys in `.env` locally or in Vercel environment variables. Never put keys in frontend code or commit `.env`.
+
+## Market-data configuration
+
+The web app requests data through the Flask server:
+
+- Twelve Data: `/api/twelve/<endpoint>`
+- Alpha Vantage: `/api/alpha?function=...`
+
+The quote and historical-chart flows try the configured providers and show an unavailable state if no real data is returned. Configure `TWELVE_DATA_API_KEY` and/or `ALPHA_VANTAGE_API_KEY` in Vercel under **Settings -> Environment Variables**, then redeploy.
+
+## Command-line predictor
 
 ```powershell
 $env:ALPHA_VANTAGE_API_KEY = "your_alpha_vantage_key"
 python stock_predictor_alphav.py --ticker AAPL
 ```
 
-Do not commit API keys to source control.
+Use `--api-key YOUR_KEY` to pass a key for one run, or `--demo` to explicitly use synthetic data. If a live download fails after retries, the CLI also reports that it is switching to synthetic data.
 
-## Setup
+The CLI trains on historical closing prices and extrapolates one step. Its output is not a reliable forecast and should not be used as financial advice.
 
-1. Install dependencies:
-```bash
-pip install -r requirements.txt
+## Checks
+
+```powershell
+node --check static/js/stockvision.js
+python -m py_compile server.py stock_predictor_alphav.py
 ```
 
-2. Run the script:
-```bash
-python stock_predictor_alphav.py --ticker AAPL
-```
-
-Or pass a custom Alpha Vantage key at runtime:
-```bash
-python stock_predictor_alphav.py --api-key YOUR_API_KEY --ticker AAPL
-```
-
-## How It Works
-
-### 1. Data Collection
-- Fetches 1 year of daily stock data from Alpha Vantage API
-- Uses exponential backoff retry mechanism (3 attempts with 2s, 4s, 8s delays)
-- Falls back to synthetic demo data if API fails
-- Retrieves: Open, High, Low, Close, Volume for each trading day
-
-### 2. Data Preprocessing
-- Creates prediction target by shifting Close prices by 1 day forward
-- Removes NaN values from dataset
-- Ensures minimum 2 samples for model training
-
-### 3. Machine Learning Model
-- **Algorithm:** Linear Regression (scikit-learn)
-- **Features:** Current day's closing price (X)
-- **Target:** Next day's closing price (Y)
-- **Train/Test Split:** 80/20 with random_state=42
-- **Prediction:** Uses most recent closing price to predict next day
-
-### 4. Trading Logic
-- **BUY Signal:** Predicted price > Current price × 1.02 (>2% increase)
-- **SELL Signal:** Predicted price < Current price × 0.98 (<-2% decrease)
-- **HOLD Signal:** Predicted change within ±2% range
-
-### 5. Visualization
-- Plots actual vs predicted prices over time
-- 12×6 figure with blue (actual) and red (predicted) lines
-- Includes grid, rotated date labels, and legend
-
-## Command Line Options
-
-```bash
-# Basic usage
-python stock_predictor_alphav.py --ticker AAPL
-
-# With custom API key
-python stock_predictor_alphav.py --api-key YOUR_KEY --ticker GOOGL
-
-# Use demo synthetic data
-python stock_predictor_alphav.py --demo
-
-# Interactive mode (prompts for ticker)
-python stock_predictor_alphav.py
-```
-
-## Dependencies
-
-- `alpha_vantage==2.3.1` - API client for stock data
-- `pandas==2.1.4` - Data manipulation and analysis
-- `numpy==1.24.3` - Numerical computing
-- `matplotlib==3.7.2` - Data visualization
-- `scikit-learn==1.3.0` - Machine learning algorithms
-
-## Output Example
-
-```
-Analysis Results:
-----------------
-Current Price: $150.25
-Predicted Next Day Price: $152.10
-Predicted Change: $1.85 (1.23%)
-Suggestion: HOLD
-```
-
-## Features
-
-- Real-time stock data fetching with retry mechanism
-- Linear regression model for next-day price prediction
-- Automated buy/sell/hold recommendations
-- Interactive matplotlib visualization
-- Fallback to synthetic data for testing
-- Command-line interface with multiple options
-- Error handling for API failures and insufficient data
-
-## Limitations
-
-- Linear regression assumes linear relationship between consecutive prices
-- 2% threshold is arbitrary and may need adjustment for different stocks
-- Model doesn't consider external factors (news, market sentiment, etc.)
-- Free API key has rate limits (5 calls/minute, 500 calls/day)
+Python compilation does not import the Flask app or initialize the database. Avoid importing or starting `server.py` for tests that do not need the database.
