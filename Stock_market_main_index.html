@@ -193,7 +193,7 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 
 /* ── Paper banner ───────────────────────────────────────── */
 .pt-banner{display:flex;align-items:center;gap:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:var(--r);padding:10px 16px;font-size:12px;color:var(--amber);font-weight:600;}
-.pt-banner span{font-size:14px}
+.pt-banner span{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:var(--amber)}
 
 /* ── Common controls ────────────────────────────────────── */
 .search-wrap{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:11px 16px;transition:border-color .2s,box-shadow .2s;}
@@ -336,7 +336,8 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 .qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .qa-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--t2);transition:all .15s;font-family:inherit;}
 .qa-btn:hover{border-color:var(--accent);color:var(--t1);background:var(--hover)}
-.qa-ic{font-size:18px}
+.qa-ic{font-size:16px;color:var(--accent);width:20px;text-align:center}
+.cash-label{font-size:9px;letter-spacing:.8px;color:var(--t3)}
 .chart-small{height:200px;position:relative}
 
 /* ── Modals ─────────────────────────────────────────────── */
@@ -486,46 +487,33 @@ body{
   box-shadow:0 16px 40px rgba(0,0,0,.12);
 }
 
-.available-tickers{
-  background:linear-gradient(145deg,rgba(20,27,38,.98),rgba(17,23,34,.98));
-  border:1px solid rgba(38,50,68,.78);
-  border-radius:var(--rl);
-  padding:16px;
-  min-width:0;
-  overflow:hidden;
+.stock-picker{position:relative;z-index:10}
+.stock-picker-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:10px}
+.stock-picker-title{font-size:14px;font-weight:700;color:var(--t1)}
+.stock-picker-hint{margin-top:3px;color:var(--t3);font-size:11.5px}
+.available-tickers-count{flex:0 0 auto;color:var(--t3);font-size:11px}
+.stock-search-wrap{position:relative}
+.stock-search-wrap #ticker{min-width:0}
+.ticker-suggestions{
+  position:absolute;top:calc(100% + 7px);left:0;right:0;z-index:100;
+  max-height:360px;overflow-y:auto;padding:5px;
+  background:#151d28;border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 16px 38px rgba(0,0,0,.38);
 }
-.available-tickers-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:13px;
+.ticker-suggestions[hidden]{display:none}
+.ticker-suggestion{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
+  width:100%;padding:10px 12px;border:0;border-radius:8px;background:transparent;
+  color:var(--t1);text-align:left;font-family:inherit;cursor:pointer;
 }
-.available-tickers-count{font-size:11px;color:var(--t3)}
-.ticker-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-.ticker-option{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
-  border:1px solid rgba(38,50,68,.9);border-radius:10px;background:#101722;color:var(--t1);
-  padding:10px 11px;cursor:pointer;text-align:left;font-family:inherit;
-  height:52px;overflow:hidden;
-  transition:transform .15s,border-color .15s,background .15s;
-}
-.ticker-option > span:first-child{min-width:0;overflow:hidden}
-.ticker-option:hover{transform:translateY(-1px);border-color:rgba(79,140,255,.58);background:#172131}
-.ticker-option-symbol{display:block;font-size:12px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ticker-option-name{display:block;margin-top:2px;overflow:hidden;color:var(--t3);font-size:9px;text-overflow:ellipsis;white-space:nowrap}
-.ticker-option-arrow{color:var(--accent);font-size:13px;flex:0 0 auto}
-.ticker-browser-tools{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.ticker-browser-search{
-  flex:1;background:#0d121c;border:1px solid rgba(38,50,68,.9);border-radius:9px;
-  padding:9px 11px;color:var(--t1);font-family:inherit;outline:none;
-}
-.ticker-browser-search:focus{border-color:rgba(79,140,255,.65)}
-.ticker-load-more{display:none;margin:12px auto 0;padding:8px 18px}
-
-@media(max-width:1100px){
-  .ticker-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-}
+.ticker-suggestion:hover,.ticker-suggestion.active{background:var(--hover)}
+.ticker-suggestion-main{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ticker-suggestion-top{display:flex;align-items:baseline;gap:9px;min-width:0}
+.ticker-suggestion-symbol{font-size:12px;font-weight:750;color:#eaf1fb}
+.ticker-suggestion-exchange{overflow:hidden;color:var(--t3);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.ticker-suggestion-name{overflow:hidden;color:var(--t2);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.ticker-suggestion-action{color:var(--accent);font-size:11px;font-weight:650;white-space:nowrap}
+.ticker-suggestion-empty{padding:14px 12px;color:var(--t2);font-size:12px}
 
 .kpi,.mc,.cpanel,.ppanel,.spanel,.trade-panel{
   background:linear-gradient(145deg,rgba(20,27,38,.98),rgba(17,23,34,.98));
@@ -651,10 +639,11 @@ body{
   .cash-pill{font-size:0}
   .cash-pill span{font-size:11px}
   .user-btn{padding-right:5px}
+  .cash-label{display:none}
   .page-heading{display:none}
   .db-kpis{grid-template-columns:1fr 1fr}
   .cards{grid-template-columns:1fr 1fr;gap:8px}
-  .ticker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stock-picker-heading{align-items:flex-start;flex-direction:column;gap:5px}
   .kpi,.mc{padding:13px 12px}
   .kpi-val{font-size:16px}
   .mc-val{font-size:18px}
@@ -667,6 +656,76 @@ body{
   .cpanel,.ppanel,.spanel,.trade-panel{padding:15px}
   .db-row2{grid-template-columns:1fr !important}
 }
+
+:root{
+  --bg:#0d131b;
+  --surface:#111923;
+  --card:#151f2b;
+  --hover:#1b2938;
+  --border:#293747;
+  --accent:#78a9f5;
+  --accent-strong:#477fce;
+  --t1:#e8edf4;
+  --t2:#a1adbb;
+  --t3:#788797;
+  --rl:14px;
+}
+body{background:var(--bg)}
+#hdr,#sb{background:var(--surface);backdrop-filter:none}
+.brand-icon,.auth-brand-icon{
+  background:#315f9d;
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:none;
+}
+.hdr-pill,.cash-pill,.paper-badge,.fx{backdrop-filter:none;box-shadow:none}
+.page{gap:20px}
+.page-heading h1{font-weight:680;letter-spacing:-.45px}
+.page-heading p{font-size:13px;color:var(--t2)}
+.nav-ic{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:21px;
+  height:21px;
+  border-radius:6px;
+  background:rgba(255,255,255,.045);
+  color:var(--t2);
+  font-size:10px;
+  font-weight:750;
+}
+.nav.active .nav-ic{background:rgba(120,169,245,.14);color:var(--accent)}
+.nav.active{color:var(--t1)}
+.wlc-icon{font-size:42px;font-weight:500;color:var(--accent);opacity:.55}
+.kpi,.mc,.cpanel,.ppanel,.spanel,.trade-panel{
+  background:var(--card);
+  border-color:var(--border);
+  box-shadow:none;
+}
+.kpi::after,.mc::after{display:none}
+.kpi:hover,.mc:hover{transform:none}
+.search-wrap{
+  background:var(--surface);
+  border-color:var(--border);
+  box-shadow:none;
+}
+.abtn,.auth-btn{
+  background:var(--accent-strong);
+  box-shadow:none;
+}
+.abtn:hover,.auth-btn:hover{background:#568bd6;opacity:1}
+.qa-btn{background:var(--surface);border-color:var(--border)}
+.qa-btn:hover{background:var(--hover)}
+.exec-btn.buy{background:#21895a}
+.exec-btn.sell{background:#b94b4b}
+.ticker-suggestions{
+  background:#151f2b;
+  border-color:#344457;
+  box-shadow:0 12px 30px rgba(0,0,0,.32);
+}
+@media(max-width:860px){
+  .nav-ic{width:auto;height:auto;background:transparent;font-size:15px}
+  .nav.active .nav-ic{background:transparent}
+}
 </style>
 </head>
 <body>
@@ -678,7 +737,7 @@ body{
   <div class="auth-wrap">
 
     <div class="auth-brand">
-      <div class="auth-brand-icon">📈</div>
+      <div class="auth-brand-icon">↗</div>
       <span class="auth-brand-name">StockVision</span>
     </div>
 
@@ -703,7 +762,7 @@ body{
       <div class="auth-switch">
         Don't have an account? <span class="auth-link" onclick="showAuthPanel('signup')">Create Account</span>
       </div>
-      <div class="auth-pt-note">📋 Paper trading — all virtual money, no real funds</div>
+      <div class="auth-pt-note">Paper trading — all virtual money, no real funds</div>
     </div>
 
     <!-- SIGN UP PANEL -->
@@ -741,7 +800,7 @@ body{
       <div class="auth-switch">
         Already have an account? <span class="auth-link" onclick="showAuthPanel('signin')">Sign In</span>
       </div>
-      <div class="auth-pt-note">📋 Paper trading — all virtual money, no real funds</div>
+      <div class="auth-pt-note">Paper trading — all virtual money, no real funds</div>
     </div>
 
   </div>
@@ -754,11 +813,11 @@ body{
 
   <!-- HEADER -->
   <header id="hdr">
-    <div class="brand"><div class="brand-icon">📈</div>StockVision</div>
+    <div class="brand"><div class="brand-icon">↗</div>StockVision</div>
     <div class="spacer"></div>
-    <div class="paper-badge">📋 PAPER TRADING</div>
+    <div class="paper-badge">PAPER TRADING</div>
     <div class="hdr-pill"><div class="dot"></div><span id="market-label">Market Open</span></div>
-    <div class="cash-pill">💰 <span id="hdr-cash">₹1,00,000</span></div>
+    <div class="cash-pill"><span class="cash-label">CASH</span><span id="hdr-cash">₹1,00,000</span></div>
     <div class="fx">USD · INR ₹83.5</div>
     <div id="clock">--:--:--</div>
 
@@ -774,12 +833,12 @@ body{
           <div class="ud-name" id="ud-name">—</div>
           <div class="ud-email" id="ud-email">—</div>
         </div>
-        <div class="ud-item" onclick="showPage('dash');closeUserMenu()">📊 Dashboard</div>
-        <div class="ud-item" onclick="showPage('portfolio');closeUserMenu()">💼 Portfolio</div>
+        <div class="ud-item" onclick="showPage('dash');closeUserMenu()">Dashboard</div>
+        <div class="ud-item" onclick="showPage('portfolio');closeUserMenu()">Portfolio</div>
         <div class="ud-sep"></div>
-        <div class="ud-item" onclick="showPage('settings');closeUserMenu()">⚙️ Account Settings</div>
+        <div class="ud-item" onclick="showPage('settings');closeUserMenu()">Account Settings</div>
         <div class="ud-sep"></div>
-        <div class="ud-item danger" onclick="doSignOut()">🚪 Sign Out</div>
+        <div class="ud-item danger" onclick="doSignOut()">Sign Out</div>
       </div>
     </div>
   </header>
@@ -787,11 +846,11 @@ body{
   <!-- SIDEBAR -->
   <aside id="sb">
     <div class="slabel">Navigation</div>
-    <div class="nav active" data-page="dash"><span class="nav-ic">📊</span> Dashboard</div>
-    <div class="nav" data-page="analytics"><span class="nav-ic">📈</span> Analytics</div>
-    <div class="nav" data-page="portfolio"><span class="nav-ic">💼</span> Portfolio</div>
-    <div class="nav" data-page="transactions"><span class="nav-ic">🧾</span> Transactions</div>
-    <div class="nav" data-page="settings"><span class="nav-ic">⚙️</span> Settings</div>
+    <div class="nav active" data-page="dash"><span class="nav-ic">D</span> Dashboard</div>
+    <div class="nav" data-page="analytics"><span class="nav-ic">A</span> Analytics</div>
+    <div class="nav" data-page="portfolio"><span class="nav-ic">P</span> Portfolio</div>
+    <div class="nav" data-page="transactions"><span class="nav-ic">T</span> Transactions</div>
+    <div class="nav" data-page="settings"><span class="nav-ic">S</span> Settings</div>
     <div class="slabel" style="margin-top:8px">Watchlist</div>
     <div class="wl-scroll" id="wlList"></div>
   </aside>
@@ -804,7 +863,7 @@ body{
       <div class="page-heading">
         <div><h1>Market overview</h1><p>Monitor your portfolio and trading activity.</p></div>
       </div>
-      <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <div class="db-kpis">
         <div class="kpi tb-blue"><div class="kpi-label">Portfolio Value</div><div class="kpi-val" id="kpi-total">₹1,00,000</div><div class="kpi-sub">Cash + Holdings</div></div>
         <div class="kpi tb-green"><div class="kpi-label">Available Cash</div><div class="kpi-val" id="kpi-cash">₹1,00,000</div><div class="kpi-sub">Ready to invest</div></div>
@@ -826,10 +885,10 @@ body{
       <div class="cpanel">
         <div class="cp-hdr"><span class="ptitle">Quick Actions</span></div>
         <div class="qa-grid">
-          <button class="qa-btn" onclick="showPage('analytics')"><span class="qa-ic">🔍</span>Analyze &amp; Trade a Stock</button>
-          <button class="qa-btn" onclick="showPage('portfolio')"><span class="qa-ic">💼</span>View Full Portfolio</button>
-          <button class="qa-btn" onclick="showPage('transactions')"><span class="qa-ic">🧾</span>Transaction History</button>
-          <button class="qa-btn" onclick="confirmReset()"><span class="qa-ic">🔄</span>Reset Virtual Account</button>
+          <button class="qa-btn" onclick="showPage('analytics')"><span class="qa-ic">↗</span>Analyze &amp; Trade a Stock</button>
+          <button class="qa-btn" onclick="showPage('portfolio')"><span class="qa-ic">P</span>View Full Portfolio</button>
+          <button class="qa-btn" onclick="showPage('transactions')"><span class="qa-ic">T</span>Transaction History</button>
+          <button class="qa-btn" onclick="confirmReset()"><span class="qa-ic">↻</span>Reset Virtual Account</button>
         </div>
       </div>
     </div>
@@ -839,30 +898,29 @@ body{
       <div class="page-heading">
         <div><h1>Stock analytics</h1><p>Research a symbol and simulate your next trade.</p></div>
       </div>
-      <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <!-- API error banner — shown when rate limit hit -->
       <div class="api-err-banner" id="api-err-banner">
-        <span class="api-err-icon">⚠️</span>
+        <span class="api-err-icon">!</span>
         <span id="api-err-msg">API limit reached.</span>
       </div>
-      <div class="search-wrap">
-        <span class="s-ic">🔍</span>
-        <input id="ticker" type="text" placeholder="Search ticker — AAPL, TSLA, NVDA, MSFT…" maxlength="10" autocomplete="off">
-        <button class="abtn" id="analyzeBtn" onclick="runAnalysis()">Analyze</button>
-      </div>
-      <section class="available-tickers" aria-labelledby="available-tickers-title">
-        <div class="available-tickers-header">
-          <span class="ptitle" id="available-tickers-title">Available Tickers</span>
-          <span class="available-tickers-count" id="availableTickerCount">Loading supported stocks...</span>
+      <section class="stock-picker" aria-labelledby="stock-picker-title">
+        <div class="stock-picker-heading">
+          <div>
+            <div class="stock-picker-title" id="stock-picker-title">Find a stock</div>
+            <div class="stock-picker-hint">Search by company name or ticker symbol.</div>
+          </div>
+          <span class="available-tickers-count" id="availableTickerCount" aria-live="polite">Loading stock directory...</span>
         </div>
-        <div class="ticker-browser-tools">
-          <input class="ticker-browser-search" id="availableTickerSearch" type="search" placeholder="Filter all loaded tickers..." oninput="filterAvailableTickers(this.value)" autocomplete="off">
+        <div class="search-wrap stock-search-wrap" role="search">
+          <span class="s-ic" aria-hidden="true">⌕</span>
+          <input id="ticker" type="search" role="combobox" aria-label="Search stocks by company name or ticker symbol" aria-autocomplete="list" aria-expanded="false" aria-controls="tickerSuggestions" placeholder="Try Apple or AAPL" maxlength="32" autocomplete="off">
+          <button class="abtn" id="analyzeBtn" type="button" onclick="runAnalysis()">Analyze</button>
         </div>
-        <div class="ticker-grid" id="availableTickerGrid"></div>
-        <button class="abtn ticker-load-more" id="tickerLoadMore" type="button" onclick="loadMoreAvailableTickers()">Load more</button>
+        <div class="ticker-suggestions" id="tickerSuggestions" role="listbox" aria-label="Stock search results" hidden></div>
       </section>
       <div id="welcome">
-        <div class="wlc-icon">📉📈</div>
+        <div class="wlc-icon">↗</div>
         <div class="wlc-title">Select a stock to analyze &amp; trade</div>
         <div class="wlc-sub">Pick a ticker from the watchlist, or type a custom symbol.<br>You have <strong id="wlc-cash">₹1,00,000</strong> virtual cash available.</div>
       </div>
@@ -892,15 +950,15 @@ body{
       </div>
       <div class="brow" id="brow" style="display:none">
         <div class="ppanel">
-          <span class="ptitle">🔮 Next-Day Prediction</span>
+          <span class="ptitle">Next-Day Prediction</span>
           <div class="prow"><span id="pred-p">—</span><span id="pred-c">—</span></div>
           <div class="pmeta" id="pred-meta">Based on linear trend.</div>
           <div class="cbar-wrap"><div class="cbar-lbl"><span>Confidence</span><span id="conf-pct">—</span></div><div class="cbar-bg"><div class="cbar-fill" id="conf-bar" style="width:0%"></div></div></div>
         </div>
-        <div class="spanel"><span class="ptitle">📊 Market Signal</span><div class="sig-body"><div class="sig-badge" id="sig-badge">—</div><div class="sig-desc" id="sig-desc">—</div></div></div>
+        <div class="spanel"><span class="ptitle">Market Signal</span><div class="sig-body"><div class="sig-badge" id="sig-badge">—</div><div class="sig-desc" id="sig-desc">—</div></div></div>
       </div>
       <div class="trade-panel" id="tradePanel" style="display:none">
-        <div class="cp-hdr"><span class="ptitle">🛒 Place Order</span><span style="font-size:11px;color:var(--t3)">Available: <strong id="trade-cash-disp" style="color:var(--green)">₹1,00,000</strong></span></div>
+        <div class="cp-hdr"><span class="ptitle">Place Order</span><span style="font-size:11px;color:var(--t3)">Available: <strong id="trade-cash-disp" style="color:var(--green)">₹1,00,000</strong></span></div>
         <div class="trade-tabs"><button class="trade-tab buy-active" id="ttab-buy" onclick="switchTradeSide('buy')">BUY</button><button class="trade-tab" id="ttab-sell" onclick="switchTradeSide('sell')">SELL</button></div>
         <div class="trade-input-row"><div class="t-label">Quantity (Shares)</div><input class="t-input" type="number" id="trade-qty" min="1" step="1" placeholder="e.g. 5" oninput="updateOrderSummary()"></div>
         <div class="t-summary" id="order-summary" style="display:none">
@@ -918,7 +976,7 @@ body{
       <div class="page-heading">
         <div><h1>Your portfolio</h1><p>Review holdings, allocation, and performance.</p></div>
       </div>
-      <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <div class="db-kpis">
         <div class="kpi tb-blue"><div class="kpi-label">Portfolio Value</div><div class="kpi-val" id="p-kpi-total">—</div><div class="kpi-sub">Cash + Holdings</div></div>
         <div class="kpi tb-green"><div class="kpi-label">Available Cash</div><div class="kpi-val" id="p-kpi-cash">—</div><div class="kpi-sub">Ready to invest</div></div>
@@ -937,7 +995,7 @@ body{
       <div class="page-heading">
         <div><h1>Transaction history</h1><p>Track every simulated buy and sell order.</p></div>
       </div>
-      <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <div class="cpanel" style="flex:1">
         <div class="cp-hdr"><span class="ptitle">Transaction History</span><span id="tx-count" style="font-size:12px;color:var(--t3)">0 transactions</span></div>
         <div class="htable-wrap"><table class="htable"><thead><tr><th>#</th><th>Date &amp; Time</th><th>Type</th><th>Stock</th><th>Qty</th><th>Price/Share (₹)</th><th>Total (₹)</th><th>Cash After (₹)</th></tr></thead><tbody id="tx-tbody"></tbody></table></div>
@@ -949,7 +1007,7 @@ body{
       <div class="page-heading">
         <div><h1>Account settings</h1><p>Manage your profile and virtual portfolio.</p></div>
       </div>
-      <div class="pt-banner"><span>📋</span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
+      <div class="pt-banner"><span aria-hidden="true"></span> PAPER TRADING MODE — All transactions use virtual money for educational purposes only.</div>
       <div class="db-row2" style="grid-template-columns:1fr 1fr">
 
         <!-- Account info -->
@@ -1316,7 +1374,7 @@ const WATCHLIST=[
   {sym:'JNJ',name:'Johnson & Johnson'},{sym:'V',name:'Visa Inc.'},{sym:'PG',name:'Procter & Gamble'},
   {sym:'UNH',name:'UnitedHealth Group'},{sym:'HD',name:'Home Depot Inc.'},{sym:'MA',name:'Mastercard Inc.'},
 ];
-let availableTickers=[],filteredAvailableTickers=[],availableTickerLimit=40;
+let availableTickers=[],availableTickerBySymbol=new Map(),tickerSearchEntries=[],tickerSuggestionMatches=[],activeTickerSuggestion=-1,tickerSuggestionQuery='';
 
 function renderWatchlist(){
   const el=document.getElementById('wlList');
@@ -1330,9 +1388,8 @@ function renderWatchlist(){
 }
 
 async function loadAvailableTickers(){
-  const grid=document.getElementById('availableTickerGrid');
   const count=document.getElementById('availableTickerCount');
-  if(!grid)return;
+  if(!count)return;
   const fetchWithTimeout=(request,timeout=12000)=>Promise.race([
     request,
     new Promise((_,reject)=>setTimeout(()=>reject(new Error('Ticker catalog request timed out')),timeout))
@@ -1382,7 +1439,7 @@ async function loadAvailableTickers(){
     const lines=alphaResult.value.split(/\r?\n/).filter(line=>line.trim() && !line.includes('<html') && !line.includes('<!DOCTYPE'));
     const header=lines.shift();
     if(!header || !/^symbol\s*,/i.test(header)) lines.length=0;
-    const columns=parseCsvLine(header);
+    const columns=header?parseCsvLine(header):[];
     const symbolIndex=columns.findIndex(column=>column.toLowerCase()==='symbol');
     const nameIndex=columns.findIndex(column=>column.toLowerCase()==='name');
     const exchangeIndex=columns.findIndex(column=>column.toLowerCase()==='exchange');
@@ -1398,48 +1455,122 @@ async function loadAvailableTickers(){
     }
   }
 
-  if(!merged.size)WATCHLIST.forEach(stock=>merged.set(stock.sym,{sym:stock.sym,name:stock.name,exchange:''}));
+  WATCHLIST.forEach(stock=>{
+    if(!merged.has(stock.sym))merged.set(stock.sym,{sym:stock.sym,name:stock.name,exchange:''});
+  });
   availableTickers=[...merged.values()].sort((a,b)=>a.sym.localeCompare(b.sym));
-  filteredAvailableTickers=availableTickers;
-  availableTickerLimit=40;
-  if(count)count.textContent=availableTickers.length+' tickers loaded';
-  renderAvailableTickerPage();
+  availableTickerBySymbol=new Map(availableTickers.map(stock=>[stock.sym,stock]));
+  tickerSearchEntries=availableTickers.map(stock=>({
+    stock,
+    symbol:stock.sym.toLowerCase(),
+    name:String(stock.name||'').toLowerCase()
+  }));
+  count.textContent=availableTickers.length.toLocaleString()+' tickers available';
+  filterAvailableTickers(document.getElementById('ticker').value);
 }
 
-function tickerHtml(stock){
-  const safeSymbol=stock.sym.replace(/[^A-Z0-9.^=-]/g,'');
-  const company=stock.name||stock.sym;
-  return `<button class="ticker-option" type="button" onclick="selectStock('${safeSymbol}')" title="Analyze ${company}">
-    <span><span class="ticker-option-symbol">${safeSymbol}</span><span class="ticker-option-name">${company}</span></span>
-    <span class="ticker-option-arrow">→</span>
-  </button>`;
-}
-
-function renderAvailableTickerPage(){
-  const grid=document.getElementById('availableTickerGrid');
-  const loadMore=document.getElementById('tickerLoadMore');
+function hideTickerSuggestions(){
+  const list=document.getElementById('tickerSuggestions');
+  if(!list)return;
+  list.hidden=true;
+  document.getElementById('ticker').setAttribute('aria-expanded','false');
+  document.getElementById('ticker').removeAttribute('aria-activedescendant');
+  activeTickerSuggestion=-1;
   const count=document.getElementById('availableTickerCount');
-  if(!grid)return;
-  grid.innerHTML=filteredAvailableTickers.slice(0,availableTickerLimit).map(tickerHtml).join('');
-  if(count)count.textContent=filteredAvailableTickers.length+' tickers found';
-  if(loadMore){
-    loadMore.style.display=availableTickerLimit<filteredAvailableTickers.length?'block':'none';
-    loadMore.textContent='Load more ('+(filteredAvailableTickers.length-availableTickerLimit)+' remaining)';
+  if(availableTickers.length)count.textContent=availableTickers.length.toLocaleString()+' tickers available';
+}
+
+function setActiveTickerSuggestion(index){
+  const list=document.getElementById('tickerSuggestions');
+  const options=list.querySelectorAll('.ticker-suggestion');
+  if(!options.length){
+    activeTickerSuggestion=-1;
+    document.getElementById('ticker').removeAttribute('aria-activedescendant');
+    return;
+  }
+  activeTickerSuggestion=Math.max(0,Math.min(index,options.length-1));
+  options.forEach((option,i)=>{
+    const active=i===activeTickerSuggestion;
+    option.classList.toggle('active',active);
+    option.setAttribute('aria-selected',String(active));
+  });
+  const activeOption=options[activeTickerSuggestion];
+  if(activeOption){
+    document.getElementById('ticker').setAttribute('aria-activedescendant',activeOption.id);
+    activeOption.scrollIntoView({block:'nearest'});
   }
 }
 
 function filterAvailableTickers(query){
+  const list=document.getElementById('tickerSuggestions');
+  const count=document.getElementById('availableTickerCount');
   const normalized=query.trim().toLowerCase();
-  filteredAvailableTickers=availableTickers.filter(stock=>
-    stock.sym.toLowerCase().includes(normalized)||String(stock.name||'').toLowerCase().includes(normalized)
-  );
-  availableTickerLimit=40;
-  renderAvailableTickerPage();
-}
+  list.replaceChildren();
+  tickerSuggestionMatches=[];
+  activeTickerSuggestion=-1;
+  tickerSuggestionQuery=normalized;
+  if(!normalized){
+    count.textContent=availableTickers.length
+      ? availableTickers.length.toLocaleString()+' tickers available'
+      : 'Loading stock directory...';
+    hideTickerSuggestions();
+    return;
+  }
 
-function loadMoreAvailableTickers(){
-  availableTickerLimit+=40;
-  renderAvailableTickerPage();
+  let matchCount=0;
+  const preferred=[],otherMatches=[];
+  tickerSearchEntries.forEach(entry=>{
+    const stock=entry.stock;
+    if(!entry.symbol.includes(normalized)&&!entry.name.includes(normalized))return;
+    matchCount++;
+    const bucket=entry.symbol.startsWith(normalized)||entry.name.startsWith(normalized)?preferred:otherMatches;
+    if(bucket.length<8)bucket.push(stock);
+  });
+  tickerSuggestionMatches=preferred.concat(otherMatches).slice(0,8);
+  count.textContent=matchCount.toLocaleString()+' matching ticker'+(matchCount===1?'':'s');
+
+  if(!tickerSuggestionMatches.length){
+    const empty=document.createElement('div');
+    empty.className='ticker-suggestion-empty';
+    empty.textContent='No matching company found. You can still analyze a ticker symbol.';
+    list.appendChild(empty);
+  }else{
+    tickerSuggestionMatches.forEach(stock=>{
+      const option=document.createElement('button');
+      option.type='button';
+      option.className='ticker-suggestion';
+      option.id='ticker-suggestion-'+tickerSuggestionMatches.indexOf(stock);
+      option.setAttribute('role','option');
+      option.setAttribute('aria-selected','false');
+      option.dataset.symbol=stock.sym;
+      const main=document.createElement('span');
+      main.className='ticker-suggestion-main';
+      const top=document.createElement('span');
+      top.className='ticker-suggestion-top';
+      const symbol=document.createElement('span');
+      symbol.className='ticker-suggestion-symbol';
+      symbol.textContent=stock.sym;
+      top.appendChild(symbol);
+      if(stock.exchange){
+        const exchange=document.createElement('span');
+        exchange.className='ticker-suggestion-exchange';
+        exchange.textContent=stock.exchange;
+        top.appendChild(exchange);
+      }
+      const name=document.createElement('span');
+      name.className='ticker-suggestion-name';
+      name.textContent=stock.name||stock.sym;
+      main.append(top,name);
+      const action=document.createElement('span');
+      action.className='ticker-suggestion-action';
+      action.textContent='Analyze →';
+      option.append(main,action);
+      option.addEventListener('click',()=>selectStock(stock.sym));
+      list.appendChild(option);
+    });
+  }
+  list.hidden=false;
+  document.getElementById('ticker').setAttribute('aria-expanded','true');
 }
 function highlightWatchItem(sym){ document.querySelectorAll('.wi').forEach(e=>e.classList.remove('sel')); const el=document.getElementById('wi-'+sym); if(el)el.classList.add('sel'); }
 
@@ -1476,7 +1607,13 @@ document.querySelectorAll('.nav[data-page]').forEach(el=>el.addEventListener('cl
 ════════════════════════════════════════════════════════════ */
 let stockChart=null,currentSymbol=null,currentPrice=0,currentPrices=[],currentDates=[],currentTab='1M',tradeSide='buy';
 
-function selectStock(sym){ showPage('analytics'); document.getElementById('ticker').value=sym; highlightWatchItem(sym); runAnalysis(); }
+function selectStock(sym){
+  hideTickerSuggestions();
+  showPage('analytics');
+  document.getElementById('ticker').value=sym;
+  highlightWatchItem(sym);
+  runAnalysis();
+}
 
 /* ════════════════════════════════════════════════════════════
    ANALYSIS FLOW
@@ -1490,8 +1627,18 @@ function checkApiError(data){
 }
 
 function runAnalysis(){
-  const sym=document.getElementById('ticker').value.trim().toUpperCase();
+  const tickerInput=document.getElementById('ticker');
+  const entered=tickerInput.value.trim();
+  const exactMatch=availableTickerBySymbol.get(entered.toUpperCase());
+  const searchMatch=tickerSuggestionQuery===entered.toLowerCase()
+    ? tickerSuggestionMatches[activeTickerSuggestion>=0?activeTickerSuggestion:0]
+    : null;
+  const sym=(exactMatch||searchMatch)?.sym||entered.toUpperCase();
   if(!sym){showToast('Please enter a ticker symbol.','warn');return;}
+  tickerInput.value=sym;
+  hideTickerSuggestions();
+  const stock=availableTickerBySymbol.get(sym);
+  document.getElementById('id-name').textContent=stock?.name||'';
   currentSymbol=sym; highlightWatchItem(sym); setLoading(true); showAnalyticsDashboard(false);
 
   fetch(`/api/twelve/quote?symbol=${encodeURIComponent(sym)}`)
@@ -1581,6 +1728,7 @@ function renderQuote(sym,price,change,pct,high,low,volume,prevCls){
   prevCls = prevCls || (price - change);
   const up=change>=0, fmtP=p=>(p>=0?'+':'')+p.toFixed(2)+'%';
   document.getElementById('id-sym').textContent=sym;
+  document.getElementById('id-name').textContent=availableTickerBySymbol.get(sym)?.name||'';
   document.getElementById('id-price').textContent=fmtUSD(price);
   document.getElementById('id-price').style.color=up?'var(--green)':'var(--red)';
   const chg=document.getElementById('id-chg');
@@ -1591,11 +1739,11 @@ function renderQuote(sym,price,change,pct,high,low,volume,prevCls){
   document.getElementById('mc-change-sub').textContent=fmtP(pct)+' vs prev close';
   document.getElementById('mc-high').textContent=fmtUSD(high); document.getElementById('mc-low').textContent=fmtUSD(low);
   let badge,cls,desc;
-  if(pct>2){badge='🚀 STRONG BUY';cls='sig-buy';desc='Strong upward momentum — ideal entry point';}
-  else if(pct>.5){badge='📈 BUY';cls='sig-buy';desc='Positive trend — good entry opportunity';}
-  else if(pct<-2){badge='📉 SELL';cls='sig-sell';desc='Declining trend — consider reducing position';}
-  else if(pct<-.5){badge='⚠️ WATCH';cls='sig-hold';desc='Minor decline — monitor for further movement';}
-  else{badge='🔄 HOLD';cls='sig-hold';desc='Stable price — maintain current position';}
+  if(pct>2){badge='STRONG BUY';cls='sig-buy';desc='Strong upward momentum — ideal entry point';}
+  else if(pct>.5){badge='BUY';cls='sig-buy';desc='Positive trend — good entry opportunity';}
+  else if(pct<-2){badge='SELL';cls='sig-sell';desc='Declining trend — consider reducing position';}
+  else if(pct<-.5){badge='WATCH';cls='sig-hold';desc='Minor decline — monitor for further movement';}
+  else{badge='HOLD';cls='sig-hold';desc='Stable price — maintain current position';}
   const sigEl=document.getElementById('sig-badge'); sigEl.textContent=badge; sigEl.className='sig-badge '+cls;
   document.getElementById('sig-desc').textContent=desc;
   const wchg=document.getElementById('wchg-'+sym); if(wchg){wchg.textContent=fmtP(pct);wchg.className='wi-chg '+(up?'up':'dn');}
@@ -1906,7 +2054,27 @@ function showToast(msg,type='ok'){
 }
 
 document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
-document.getElementById('ticker').addEventListener('keydown',e=>{if(e.key==='Enter')runAnalysis();});
+const tickerInput=document.getElementById('ticker');
+tickerInput.addEventListener('input',()=>filterAvailableTickers(tickerInput.value));
+tickerInput.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'&&!document.getElementById('tickerSuggestions').hidden){
+    e.preventDefault();
+    setActiveTickerSuggestion(activeTickerSuggestion+1);
+  }else if(e.key==='ArrowUp'&&!document.getElementById('tickerSuggestions').hidden){
+    e.preventDefault();
+    setActiveTickerSuggestion(activeTickerSuggestion-1);
+  }else if(e.key==='Enter'){
+    e.preventDefault();
+    const option=tickerSuggestionMatches[activeTickerSuggestion>=0?activeTickerSuggestion:0];
+    if(!document.getElementById('tickerSuggestions').hidden&&option)selectStock(option.sym);
+    else runAnalysis();
+  }else if(e.key==='Escape'){
+    hideTickerSuggestions();
+  }
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.stock-picker'))hideTickerSuggestions();
+});
 </script>
 </body>
 </html>
