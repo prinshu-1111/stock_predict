@@ -7,6 +7,7 @@ import json
 import time
 import sqlite3
 import shutil
+import hashlib
 
 from flask import Flask, Response, jsonify, render_template, request, send_from_directory
 from dotenv import load_dotenv
@@ -29,6 +30,10 @@ if os.environ.get("VERCEL"):
     bundled_db = BASE_DIR / "stockvision.db"
     if not DB_PATH.exists() and bundled_db.exists():
         shutil.copy2(bundled_db, DB_PATH)
+
+MARKET_CACHE_DIR = Path("/tmp/stockvision-market-cache") if os.environ.get("VERCEL") else BASE_DIR / ".market_cache"
+MARKET_CACHE_MAX_AGE = 6 * 60 * 60
+MARKET_CACHE_STALE_AGE = 7 * 24 * 60 * 60
 
 
 def db():
@@ -102,7 +107,67 @@ def cached_catalog_response():
         return None
 
 
+def market_cache_path(provider, endpoint, params):
+    cache_key = json.dumps(
+        {"provider": provider, "endpoint": endpoint, "params": params},
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    digest = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
+    return MARKET_CACHE_DIR / f"{digest}.json"
+
+
+def cached_market_response(provider, endpoint, params, allow_stale=False):
+    path = market_cache_path(provider, endpoint, params)
+    try:
+        age = time.time() - path.stat().st_mtime
+        max_age = MARKET_CACHE_STALE_AGE if allow_stale else MARKET_CACHE_MAX_AGE
+        if endpoint == "quote" or endpoint == "GLOBAL_QUOTE":
+            max_age = 2 * 60 if not allow_stale else MARKET_CACHE_STALE_AGE
+        if age > max_age:
+            return None
+        record = json.loads(path.read_text(encoding="utf-8"))
+        body = record["body"]
+        content_type = record.get("contentType", "application/json")
+        return Response(body, status=200, mimetype=content_type)
+    except (OSError, json.JSONDecodeError, KeyError, TypeError):
+        return None
+
+
+def cache_market_response(provider, endpoint, params, body, content_type):
+    try:
+        MARKET_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        path = market_cache_path(provider, endpoint, params)
+        path.write_text(
+            json.dumps({"body": body.decode("utf-8", errors="replace"), "contentType": content_type}),
+            encoding="utf-8",
+        )
+    except (OSError, UnicodeDecodeError):
+        pass
+
+
+def market_response_is_available(provider, body):
+    if not body:
+        return False
+    try:
+        data = json.loads(body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return True
+    if provider == "alpha":
+        if data.get("Note") or data.get("Information") or data.get("Error Message"):
+            return False
+        return bool(data)
+    if isinstance(data, dict) and data.get("status") == "error":
+        return False
+    return bool(data)
+
+
 def provider_request(provider, endpoint, params):
+    cache_params = dict(params)
+    cached = cached_market_response(provider, endpoint, cache_params)
+    if cached is not None:
+        return cached
+
     if provider == "twelve":
         api_key = os.environ.get("TWELVE_DATA_API_KEY", "")
         base_url = "https://api.twelvedata.com"
@@ -126,6 +191,8 @@ def provider_request(provider, endpoint, params):
         with urllib.request.urlopen(url, timeout=20) as response:
             content_type = response.headers.get_content_type()
             body = response.read()
+            if market_response_is_available(provider, body):
+                cache_market_response(provider, endpoint, cache_params, body, content_type)
             if provider == "twelve" and endpoint == "stocks" and response.status == 200:
                 try:
                     catalog = json.loads(body)
@@ -134,8 +201,14 @@ def provider_request(provider, endpoint, params):
                     pass
             return Response(body, status=response.status, mimetype=content_type)
     except urllib.error.HTTPError as error:
+        stale = cached_market_response(provider, endpoint, cache_params, allow_stale=True)
+        if stale is not None:
+            return stale
         return Response(error.read(), status=error.code, mimetype=error.headers.get_content_type())
     except urllib.error.URLError as error:
+        stale = cached_market_response(provider, endpoint, cache_params, allow_stale=True)
+        if stale is not None:
+            return stale
         return Response(str(error.reason), status=502, mimetype="text/plain")
 
 
