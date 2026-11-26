@@ -402,65 +402,18 @@ async function loadAvailableTickers(){
     request,
     new Promise((_,reject)=>setTimeout(()=>reject(new Error('Ticker catalog request timed out')),timeout))
   ]);
-  const twelvePromise=fetchWithTimeout(fetch('/api/twelve/stocks').then(async r=>{
-    if(!r.ok) throw new Error(`Ticker catalog request failed (${r.status})`);
-    return r.json();
-  }));
-  const alphaPromise=fetchWithTimeout(fetch('/api/alpha?function=LISTING_STATUS').then(async r=>{
-    if(!r.ok) throw new Error(`Listing status request failed (${r.status})`);
-    const content=await r.text();
-    if(!/^symbol\s*,/i.test(content.trim()) || /<(?:!doctype|html)/i.test(content)) {
-      throw new Error('Listing status returned invalid content');
-    }
-    return content;
-  }));
-
-  const [twelveResult,alphaResult]=await Promise.allSettled([twelvePromise,alphaPromise]);
   const merged=new Map();
-
-  function parseCsvLine(line){
-    const values=[];
-    let value='',quoted=false;
-    for(let i=0;i<line.length;i++){
-      const char=line[i];
-      if(char==='\"'){
-        if(quoted && line[i+1]==='\"'){value+='\"';i++;}
-        else quoted=!quoted;
-      }else if(char===',' && !quoted){
-        values.push(value.trim());
-        value='';
-      }else value+=char;
-    }
-    values.push(value.trim());
-    return values;
-  }
-
-  if(twelveResult.status==='fulfilled'){
-    const rows=Array.isArray(twelveResult.value?.data)?twelveResult.value.data:[];
+  try{
+    const response=await fetchWithTimeout(fetch('/api/twelve/stocks'));
+    if(!response.ok)throw new Error(`Ticker catalog request failed (${response.status})`);
+    const data=await response.json();
+    const rows=Array.isArray(data?.data)?data.data:[];
     rows.forEach(row=>{
       const symbol=String(row.symbol||'').trim().toUpperCase();
-      if(symbol) merged.set(symbol,{sym:symbol,name:row.name||row.symbol,exchange:row.exchange||''});
+      if(symbol)merged.set(symbol,{sym:symbol,name:row.name||row.symbol,exchange:row.exchange||''});
     });
-  }
-
-  if(alphaResult.status==='fulfilled'){
-    const lines=alphaResult.value.split(/\r?\n/).filter(line=>line.trim() && !line.includes('<html') && !line.includes('<!DOCTYPE'));
-    const header=lines.shift();
-    if(!header || !/^symbol\s*,/i.test(header)) lines.length=0;
-    const columns=header?parseCsvLine(header):[];
-    const symbolIndex=columns.findIndex(column=>column.toLowerCase()==='symbol');
-    const nameIndex=columns.findIndex(column=>column.toLowerCase()==='name');
-    const exchangeIndex=columns.findIndex(column=>column.toLowerCase()==='exchange');
-    for(const line of lines){
-      const row=parseCsvLine(line);
-      const symbol=(row[symbolIndex]||'').trim().toUpperCase();
-      if(!symbol)continue;
-      if(!merged.has(symbol)) merged.set(symbol,{
-        sym:symbol,
-        name:row[nameIndex]||symbol,
-        exchange:row[exchangeIndex]||''
-      });
-    }
+  }catch(error){
+    console.warn('[StockVision] Ticker catalog unavailable; showing the default watchlist:',error);
   }
 
   WATCHLIST.forEach(stock=>{
@@ -652,6 +605,19 @@ function checkApiError(data){
   return null;
 }
 
+let alphaRequestQueue=Promise.resolve();
+let lastAlphaRequestStartedAt=0;
+function fetchAlpha(url){
+  const request=alphaRequestQueue.then(async()=>{
+    const wait=Math.max(0,1100-(Date.now()-lastAlphaRequestStartedAt));
+    if(wait)await new Promise(resolve=>setTimeout(resolve,wait));
+    lastAlphaRequestStartedAt=Date.now();
+    return fetch(url);
+  });
+  alphaRequestQueue=request.then(()=>undefined,()=>undefined);
+  return request;
+}
+
 function runAnalysis(){
   const tickerInput=document.getElementById('ticker');
   const entered=tickerInput.value.trim();
@@ -705,7 +671,7 @@ function runAnalysis(){
     .catch(err=>{
       if(requestId!==quoteRequestId)return;
       console.warn('[StockVision] Twelve Data quote unavailable, trying Alpha Vantage:',err.message);
-      fetch(`/api/alpha?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(sym)}`)
+      fetchAlpha(`/api/alpha?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(sym)}`)
         .then(r=>{
           if(!r.ok) throw new Error('HTTP '+r.status);
           return r.json();
@@ -818,7 +784,7 @@ function loadChart(sym){
 }
 
 function loadAlphaVantageChart(sym,requestId){
-  fetch(`/api/alpha?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(sym)}&outputsize=compact`)
+  fetchAlpha(`/api/alpha?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(sym)}&outputsize=compact`)
     .then(r=>{
       if(!r.ok)throw new Error('HTTP '+r.status);
       return r.json();
