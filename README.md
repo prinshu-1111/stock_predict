@@ -1,4 +1,4 @@
-# StockVison - A Stock Price Prediction & Buy/Sell Suggestion
+# StockLab - A Stock Price Prediction & Buy/Sell Suggestion
 
 A machine learning project that predicts next-day stock prices using linear regression and provides buy/sell recommendations based on Alpha Vantage market data.
 
@@ -6,24 +6,31 @@ A machine learning project that predicts next-day stock prices using linear regr
 
 ## API configuration
 
-Configure your own provider keys locally:
+The web dashboard sends market-data requests through the Python server. Provider keys must be configured on that server; setting them in browser `localStorage` will not work.
 
 - Alpha Vantage: https://www.alphavantage.co/support/#api-key
 - Twelve Data: https://twelvedata.com/
 
-For the Python application:
+For the deployed dashboard, add `ALPHA_VANTAGE_API_KEY` and/or `TWELVE_DATA_API_KEY` under your Vercel project's **Settings → Environment Variables**, then redeploy. Do not put provider keys in the HTML or browser storage.
 
-```bash
-set ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key
-python stock_predictor_alphav.py --ticker AAPL
+For local development, create a `.env` file in the project directory:
+
+```dotenv
+ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key
+TWELVE_DATA_API_KEY=your_twelve_data_key
 ```
 
-For the browser application, configure the keys in browser local storage (the keys are not displayed in this repository):
+Then start the web server:
 
-```javascript
-localStorage.setItem('sv_alpha_vantage_key', 'your_alpha_vantage_key');
-localStorage.setItem('sv_twelve_data_key', 'your_twelve_data_key');
-location.reload();
+```powershell
+python server.py
+```
+
+The Python command-line application only needs the Alpha Vantage key:
+
+```powershell
+$env:ALPHA_VANTAGE_API_KEY = "your_alpha_vantage_key"
+python stock_predictor_alphav.py --ticker AAPL
 ```
 
 Do not commit API keys to source control.

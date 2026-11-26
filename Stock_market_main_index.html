@@ -1208,7 +1208,7 @@ async function doSignUp(){
   const id='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
   try{
     const user=await apiUserRequest('/api/auth/signup',{
-      method:'POST',body:JSON.stringify({id,name,email,password,pwHash:hashPass(pw),passwordHash:hashPass(pw)})
+      method:'POST',body:JSON.stringify({id,name,email,password:pw,passwordHash:hashPass(pw)})
     });
     setSession(id);
     bootApp(user);
